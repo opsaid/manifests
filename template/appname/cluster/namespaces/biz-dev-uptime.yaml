@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: biz-dev-uptime
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limit-range
+  namespace: biz-dev-uptime
+spec:
+  limits:
+  - default:
+      cpu: 1
+      memory: 1Gi
+    defaultRequest:
+      cpu: 200m
+      memory: 256Mi
+    type: Container
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: memory-quota
+  namespace: biz-dev-uptime
+spec:
+  hard:
+    requests.memory: 10Gi
+    limits.memory: 10Gi
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo
+  namespace: biz-dev-uptime
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: opsaid:guest
+  namespace: biz-dev-uptime
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pod
+  verbs:
+  - get
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: opsaid:guest
+  namespace: biz-dev-uptime
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: opsaid:guest
+subjects:
+- kind: ServiceAccount
+  name: demo
+  namespace: biz-dev-uptime
