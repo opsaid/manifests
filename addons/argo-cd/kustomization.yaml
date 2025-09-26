@@ -1,0 +1,61 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argocd
+
+replicas:
+- name: argocd-server
+  count: 1
+
+resources:
+- clusters/namespaces/argocd.yaml
+- clusters/crds/
+- security/roles/
+- configuration/configmaps/
+- configuration/secrets/argocd-notifications.yaml
+- network/services/argocd-applicationset-controller.yaml
+- network/services/argocd-metrics.yaml
+- network/services/argocd-notifications-controller-metrics.yaml
+- network/services/argocd-redis-service.yaml
+- network/services/argocd-repo-server.yaml
+- network/services/argocd-server-metrics.yaml
+- network/services/argocd-server-service.yaml
+- workloads/deployments/argocd-applicationset-controller.yaml
+- workloads/deployments/argocd-notifications-controller.yaml
+- workloads/deployments/argocd-redis.yaml
+- workloads/deployments/argocd-repo-server.yaml
+- workloads/deployments/argocd-server.yaml
+- workloads/statefulsets/argocd-application-controller.yaml
+- network/ingresses/argocd.yaml
+
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/ingressClassName
+      value: nginx
+  target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+- patch: |-
+    - op: replace
+      path: /spec/rules/0/host
+      value: cd.jiurufu-3l.dev.kpcops.com
+  target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+
+images:
+- name: redis:7.2.7-alpine
+  newName: registry.cn-hangzhou.aliyuncs.com/kube-image-repo/redis
+  newTag: 7.2.7-alpine
+- name: public.ecr.aws/docker/library/redis
+  newName: registry.cn-hangzhou.aliyuncs.com/kube-image-repo/redis
+  newTag: 7.2.7-alpine
+- name: quay.io/argoproj/argocd
+  newName: registry.cn-hangzhou.aliyuncs.com/kube-image-repo/argocd
+  newTag: v3.1.7
+- name: ghcr.io/dexidp/dex
+  newName: registry.cn-hangzhou.aliyuncs.com/kube-image-repo/dexidp
+  newTag: v2.43.0
