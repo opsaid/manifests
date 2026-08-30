@@ -3,9 +3,12 @@ kind: Kustomization
 
 namespace: biz-dev-uptime
 
-commonLabels:
-  opsaid.net/appname: oneops-demo-v1
-  opsaid.net/pm2-uuid: 3264e3fe-2bce-4835-8588-99651a8ddd3b
+labels:
+- includeSelectors: false
+  includeTemplates: true
+  pairs:
+    opsaid.net/appname: oneops-demo-v1
+    opsaid.net/pm2-uuid: 3264e3fe-2bce-4835-8588-99651a8ddd3b
 
 commonAnnotations:
   opsaid.net/pm2-uuid: 3264e3fe-2bce-4835-8588-99651a8ddd3b
@@ -13,7 +16,7 @@ commonAnnotations:
 configMapGenerator:
 - name: oneops-demo-v1
   files:
-  - app.yaml=config/configmap/app.yaml
+  - app.yaml=configuration/configmaps/app.yaml
   options:
     disableNameSuffixHash: true
 
@@ -22,8 +25,8 @@ replicas:
   count: 1
 
 resources:
-- service/ingresses.yaml
-- service/services.yaml
+- network/services/app.yaml
+- network/ingresses/app.yaml
 - workloads/deployments/oneops-demo-v1.yaml
 
 images:
