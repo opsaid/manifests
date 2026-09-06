@@ -78,15 +78,14 @@ chart 的 `copy-app-data` initContainer 用于从镜像内播种默认数据；�
 
 ### 外部 Postgres 与 pgvector
 
-`DATABASE_URL`（secrets env，含密码）指向外部 Postgres（192.0.2.85:5432/openwebui），
+`DATABASE_URL`（secrets env，含密码）指向外部 Postgres（地址由租户 secrets env 提供），
 `VECTOR_DB=pgvector` 复用同一实例（open-webui 的 pgvector 连接串默认回退 `DATABASE_URL`）。
 SQLite 不再使用；`/app/backend/data`（emptyDir）仅承载缓存与 S3 上传中转，Pod 重建无状态损失。
 配套 `ENABLE_PERSISTENT_CONFIG=False`：运行时配置只认 env，后台 UI 改动不持久化（不再产生 `config.json`）。
 
 ### pgvector 前置条件
 
-- 目标库需安装 vector 扩展：`CREATE EXTENSION IF NOT EXISTS vector;`（192.0.2.85 的
-  openwebui 库，部署前确认，否则启动建表失败）
+- 目标库需安装 vector 扩展：`CREATE EXTENSION IF NOT EXISTS vector;`（目标 openwebui 库，部署前确认，否则启动建表失败）
 - `PGVECTOR_DB_URL` 未设置时复用 `DATABASE_URL`
 - 向量维度默认上限 `PGVECTOR_INITIALIZE_MAX_VECTOR_LENGTH=1536`，与 text-embedding-3-small
   匹配；更换更大维度模型（如 text-embedding-3-large 的 3072）需同步调大该值并启用
@@ -100,11 +99,12 @@ SQLite 不再使用；`/app/backend/data`（emptyDir）仅承载缓存与 S3 上
 embedding / reranking 均不使用本地模型，仅对本地模型生效的 `*_AUTO_UPDATE` 开关已移除；
 `HF_HUB_OFFLINE=1` 兜底禁止 HuggingFace 下载。
 
-### OAuth / OIDC 单点登录（GoChat）
+### OAuth / OIDC 单点登录
 
-OAuth 参数对齐线上 compose，`OAUTH_CLIENT_SECRET` 在 secrets env（占位符 `CHANGE_ME`）。
-注意：`OPENID_REDIRECT_URI` 已按 k8s 域名改为 `http://open-webui.demo.example.com/oauth/oidc/callback`，
-需在 GoChat 侧注册该回调地址。
+OAuth 参数由租户按身份提供方配置，`OAUTH_CLIENT_SECRET` 在 secrets env（占位符 `CHANGE_ME`）；
+base 默认关闭 OIDC 注册与角色/分组管理，输入项见 [应用接入说明](../../docs/apps/open-webui.md)。
+注意：`OPENID_REDIRECT_URI` 按租户域名配置（base 占位为 `http://open-webui.example.com/oauth/oidc/callback`），
+需在身份提供方（如 GoChat）注册该回调地址。
 
 ### 域名替换
 
@@ -137,7 +137,7 @@ base 清单不启用 TLS；需要时取消 kustomization `patches` 中预留的 
 | 项 | compose | 本清单 | 说明 |
 | --- | --- | --- | --- |
 | 端口 | `PORT=3000` | 镜像默认 8080 | Service/Ingress 已按 8080 适配 |
-| redis | 外部 192.0.2.85:6379（带密码） | 集群内 `open-webui-redis` | 改接外部 redis 时将 `REDIS_URL` 移入 secrets |
+| redis | 外部自建 redis（带密码） | 集群内 `open-webui-redis` | 改接外部 redis 时将 `REDIS_URL` 移入 secrets |
 | nofile 65535 | ulimits | 未设置 | k8s 无直接等价（需特权 initContainer），暂不设置 |
 | CA 证书挂载 | `/etc/ssl/certs/ca-certificates.crt` | 未挂载 | `REQUESTS_VERIFY=False` 下非必需；需严格校验时以 ConfigMap 挂载 |
 | 资源 | 无限制 | limits 2C / 4Gi | `UVICORN_WORKERS=4` 对应提升 |
