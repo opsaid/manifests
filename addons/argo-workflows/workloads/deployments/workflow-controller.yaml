@@ -23,7 +23,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.name
-        image: registry.example.com/images/argo-workflow-controller:latest
+        image: quay.io/argoproj/workflow-controller
         livenessProbe:
           failureThreshold: 3
           httpGet:

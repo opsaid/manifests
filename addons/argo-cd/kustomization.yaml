@@ -37,25 +37,15 @@ patches:
     group: networking.k8s.io
     version: v1
     kind: Ingress
-- patch: |-
-    - op: replace
-      path: /spec/rules/0/host
-      value: cd.example.com
-  target:
-    group: networking.k8s.io
-    version: v1
-    kind: Ingress
 
+# Ingress 实际域名由私有 overlay 替换（功能清单为 cd.example.com 占位）；
+# 镜像保持官方地址，私有 registry 替换由私有 overlay 的 images newName 完成
 images:
 - name: redis:7.2.7-alpine
-  newName: registry.example.com/images/redis
   newTag: 7.2.7-alpine
 - name: public.ecr.aws/docker/library/redis
-  newName: registry.example.com/images/redis
   newTag: 7.2.7-alpine
 - name: quay.io/argoproj/argocd
-  newName: registry.example.com/images/argocd
   newTag: v3.1.7
 - name: ghcr.io/dexidp/dex
-  newName: registry.example.com/images/dexidp
   newTag: v2.43.0

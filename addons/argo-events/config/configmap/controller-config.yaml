@@ -2,10 +2,8 @@ eventBus:
   nats:
     versions:
     - version: 0.22.1
-      # nats-streaming:0.22.1
-      natsStreamingImage: registry.example.com/opsaid/nats-streaming:0.22.1
-      # natsio/prometheus-nats-exporter:0.8.0
-      metricsExporterImage: registry.example.com/opsaid/prometheus-nats-exporter:0.8.0
+      natsStreamingImage: nats-streaming:0.22.1
+      metricsExporterImage: natsio/prometheus-nats-exporter:0.8.0
   jetstream:
     # Default JetStream settings, could be overridden by EventBus JetStream specs
     settings: |

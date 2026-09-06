@@ -24,7 +24,7 @@ spec:
               fieldPath: metadata.namespace
         - name: PORT
           value: "8443"
-        image: registry.example.com/images/argo-events:v1.9.0
+        image: quay.io/argoproj/argo-events
         imagePullPolicy: Always
         name: webhook
         securityContext:

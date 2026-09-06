@@ -19,7 +19,7 @@ spec:
         - "--auth-mode=server"
         - "--secure=false"
         env: []
-        image: registry.example.com/images/argocli:latest
+        image: quay.io/argoproj/argocli
         name: argo-server
         ports:
         - containerPort: 2746

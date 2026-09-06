@@ -24,5 +24,6 @@ resources:
 - workloads/deployments/events-webhook.yaml
 
 images:
-- name: registry.example.com/images/argo-events
+# 镜像保持官方地址；私有 registry 替换由私有 overlay 的 images newName 完成
+- name: quay.io/argoproj/argo-events
   newTag: v1.9.0

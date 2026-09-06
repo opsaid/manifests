@@ -23,20 +23,10 @@ resources:
 - workloads/deployments/argo-server.yaml
 - workloads/deployments/workflow-controller.yaml
 
-patches:
-# Ingress 实际域名在此替换，不改动只读的 service/ 清单
-- patch: |-
-    - op: replace
-      path: /spec/rules/0/host
-      value: workflows.example.com
-  target:
-    group: networking.k8s.io
-    version: v1
-    kind: Ingress
-    name: workflows
-
+# Ingress 实际域名由私有 overlay 替换（service/ 清单为 workflows.example.com 占位）；
+# 镜像保持官方地址，私有 registry 替换由私有 overlay 的 images newName 完成
 images:
-- name: registry.example.com/images/argocli
+- name: quay.io/argoproj/argocli
   newTag: v3.5.7
-- name: registry.example.com/images/argo-workflow-controller
+- name: quay.io/argoproj/workflow-controller
   newTag: v3.5.7
