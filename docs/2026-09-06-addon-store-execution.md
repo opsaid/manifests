@@ -1,6 +1,6 @@
 # Addon Store 仓库内执行记录
 
-状态：本地实施完成；公开发布和真实环境验收未完成。实施计划是进度入口，本文记录本次证据。
+状态：本地实施完成，公开发布前置（全仓净化、历史改写、推送）已完成；集群验收与仓库可见性切换待完成。实施计划是进度入口，本文记录本次证据及后续推进。
 
 ## 已完成
 
@@ -87,3 +87,16 @@ Ingress/open-webui/spec/rules/0/host
 - open-webui README 需要清理 4 处环境信息并同步已过时的接入/default 说明。已准备私有临时补丁，未修改只读文件。
   根 AGENTS.md 明确要求只读路径先获维护者同意；当前执行授权未逐项确认这些只读清理内容。
 - 未创建或推送提交/tag，未切换部署入口。CI 已落盘，本地执行同等 Python/构建检查，GitHub Actions 实际运行仍待推送后确认。
+
+## 后续推进（2026-09-06 同日）
+
+- 旧 addon（argo-cd、argo-events、argo-workflows）、模板及 open-webui README 完成最小中性化；
+  前述 13 处工作区发现与黑名单补充后的额外命中已全部清除，`--audit-public` 为 0 发现。
+- 组织专属私有值模式从校验器代码外置到不入库的 `scripts/private-patterns.local`
+  （占位模板见 `private-patterns.example`），避免公开仓库经检测器正则再泄露被净化的标识；
+  合同测试增至 21 项。
+- Git 历史经 git-filter-repo 两次 replace-text 改写（域名/内网地址/registry 一轮、组织标识一轮），
+  全历史组织专属标识扫描零残留；剩余命中仅为校验器通用模式与测试夹具（RFC1918）。
+- origin 重建并强推 main；仓库可见性切换与 GitHub Actions 首次远程运行待确认。
+- 仍未完成：真实集群运行验收、发布 tag 与 catalog 登记、私有环境仓库建设；pre-rewrite 备份
+  bundle 含原始真实值，仅存于本机临时目录，确认公开状态后由维护者删除或转存离线。
