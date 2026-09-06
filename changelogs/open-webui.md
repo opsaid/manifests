@@ -1,6 +1,8 @@
-# Changelog
+# open-webui 变更记录
 
-## Unreleased — open-webui
+每个应用一个文件；版本标题对应发布 tag（`<id>-v<semver>`），未发布变更记录在 Unreleased。
+
+## Unreleased
 
 - 采用公共 Kustomize base + 私有 overlay；公共规范合并至 addon-maintenance 技能。
 - 移除 base 中的私有域名、镜像仓库和部署身份，Ingress class 由 overlay 指定。

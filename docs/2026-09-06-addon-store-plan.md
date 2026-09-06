@@ -58,7 +58,7 @@
 ├── docs/apps/<app>.md               # 应用依赖、输入、运行和升级说明
 ├── docs/*-plan.md                   # 阶段计划，不作为规范入口
 ├── scripts/                        # 构建与校验程序
-└── CHANGELOG.md                     # 按应用记录模板发布
+└── changelogs/<app>.md              # 按应用记录模板发布
 
 独立私有仓库 environment-config/
 └── environments/<environment>/<app>/
@@ -166,7 +166,7 @@ AGENTS.md 的链接读取技能。不同工具的入口可以不同，规则及�
 
 ### Task 6：运行验证、上架和版本发布
 
-新增：`catalog.yaml`、`CHANGELOG.md`；按具体授权净化应用文档；更新规范入口引用。
+新增：`catalog.yaml`、`changelogs/`；按具体授权净化应用文档；更新规范入口引用。
 
 - [ ] 在测试环境验证官方镜像拉取、UID/GID 和可写目录、启动及探针、数据库连接、文件上传/读取、模型调用；启用 OAuth 时验证登录。
 - [ ] 验证仅更新 env 后，滚动更新确实使新 Pod 使用新配置；验证重建后需保留的数据仍可用。

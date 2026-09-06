@@ -24,7 +24,7 @@ description: 在 manifests 仓库制作、修改、升级或评审 Kustomize 应
    `python3 -m unittest discover -s scripts/tests -v`。
 5. 准备私有部署配置时使用 `scripts/render-private.py` 的临时副本流程；工具只生成文件，
    实际 apply/rollout 根据当前部署授权和应用文档执行。
-6. 报告实际完成的检查与尚未完成的运行/发布条件；计划记进度，CHANGELOG 记录发布影响，
+6. 报告实际完成的检查与尚未完成的运行/发布条件；计划记进度，`changelogs/<app>.md` 记录发布影响，
    不把渲染通过记成集群验收或正式上架。
 
 通用检查程序在根 `scripts/`，完整示例在根 `examples/`，均不再复制进技能目录。

@@ -8,7 +8,7 @@
 - 技能位于 `.agents/skills/`，Claude 技能入口为指向它的符号链接。AGENTS.md 保留共享规则，CLAUDE.md 仅导入 AGENTS.md。
 - open-webui 仅修改入口和 configuration，功能资源及 addon README 均未改动。
 - 提供完整虚构 overlay、应用输入说明、私有临时构建工具、固定版本校验器及 CI 工作流。
-- catalog 保持空列表，CHANGELOG 使用 Unreleased，不伪造上架状态或发布 tag。
+- catalog 保持空列表，changelogs/open-webui.md 使用 Unreleased，不伪造上架状态或发布 tag。
 
 ## 验证结果
 
@@ -24,7 +24,7 @@
 
 改动前后资源身份相同（9 个），以下只记录变化字段，不记录原环境值或 Secret 内容。
 身份 UUID 的 labels/annotations 移除；域名恢复占位；Ingress class 从 base 移除；镜像改为官方地址。
-配置改动包括证书校验、OAuth 默认关闭、端点中性化及增加稳定会话签名密钥，详情见 CHANGELOG。
+配置改动包括证书校验、OAuth 默认关闭、端点中性化及增加稳定会话签名密钥，详情见 changelogs/open-webui.md。
 其余资源、探针、权限和存储字段未发生变更，但官方镜像的运行兼容性仍需独立验证。
 
 ```text
@@ -80,8 +80,9 @@ Ingress/open-webui/spec/rules/0/host
 
 - 未获得私有配置仓库、测试集群 context/namespace 和可用密钥来源，因此未执行真实 apply、rollout、登录或数据恢复测试。
 - 全仓工作区扫描发现 13 处已知环境值，分布在旧 addon、模板及只读 README；此计数不是所有敏感信息的完整清单。
-- 对当前本地可见的 6 个 Git 提交执行已知值模式搜索，3 个提交有匹配：`7b948d6`、`28c6a71`、`ba8c52d`。
-  该搜索只输出提交和路径，不输出内容；没有声称已完成凭据全量或远端不可见历史审查。
+- 对当前本地可见的全部 Git 提交执行已知值模式搜索，确认 3 个提交（模板重构、argo-cd 与
+  argo-events 引入时）存在匹配。该搜索只输出提交和路径，不输出内容；没有声称已完成凭据全量
+  或远端不可见历史审查。
 - 全仓旧应用中性化和历史处理涉及其他应用/文件，需单独确定公共发布使用本仓库还是净化快照仓库。
 - open-webui README 需要清理 4 处环境信息并同步已过时的接入/default 说明。已准备私有临时补丁，未修改只读文件。
   根 AGENTS.md 明确要求只读路径先获维护者同意；当前执行授权未逐项确认这些只读清理内容。
