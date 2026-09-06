@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SENSITIVE = {'DATABASE_URL', 'WEBUI_SECRET_KEY', 'OPENAI_API_KEY',
              'OAUTH_CLIENT_SECRET', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY'}
 PRIVATE = re.compile(r'\b(?:192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)\b|'
-                     r'(?:example-org|example-org)\.com|example-org|'
+                     r'(?:example-org|example-org)\.com|example-org|images|'
                      r'registry\.cn-[\w-]+\.aliyuncs\.com/opsaid|ccr\.ccs\.tencentyun\.com/opsaid', re.I)
 CREDENTIAL = re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bAKIA[A-Z0-9]{16}\b|\bghp_[A-Za-z0-9]{30,}\b|\bsk-[A-Za-z0-9_-]{24,}\b')
 
