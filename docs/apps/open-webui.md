@@ -149,7 +149,9 @@ python3 -m unittest discover -s scripts/tests -v
 scripts/validate.sh --audit-public
 ```
 
-前两项验证构建与试点合同。最后一项扫描整个工作区，当前旧 addon、模板及只读应用文档仍可能失败；
-结果仅输出文件/行/规则，不输出值。它没有扫描 Git 历史，也不是完整凭据识别器，公开前还需要人工审查。
+前两项验证构建与试点合同。最后一项扫描整个工作区：通用模式（内网地址、公共云 registry 等）内置于
+脚本，组织专属模式由不入库的 `scripts/private-patterns.local` 提供（从 `private-patterns.example`
+复制填写），缺失时该部分检查不生效。结果仅输出文件/行/规则，不输出值。它没有扫描 Git 历史，
+也不是完整凭据识别器，公开前还需要人工审查与全历史扫描。
 `--deploy <overlay>` 用于已在受控临时副本填好配置的部署输入检查，不访问集群。
 `--local-test` 只允许本地合同测试使用本地 base，不能作为正式发布验证。

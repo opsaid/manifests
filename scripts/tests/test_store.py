@@ -247,6 +247,28 @@ class StoreTests(unittest.TestCase):
         self.assertIn('.agents/skills/app/references/config.md:1', log.getvalue())
         self.assertNotIn(value, log.getvalue())
 
+    def test_org_patterns_loaded_from_untracked_file(self):
+        pattern_file = Path(tempfile.mkdtemp(dir=self.root)) / 'private-patterns.local'
+        pattern_file.write_text('# comment\nunit-test-private-ns\n')
+        original = validate.ORG_PATTERNS_FILE
+        validate.ORG_PATTERNS_FILE = pattern_file
+        try:
+            self.assertTrue(validate.private_hits('image: registry.example.com/unit-test-private-ns/app:1'))
+            self.assertFalse(validate.private_hits('image: registry.example.com/app:1'))
+        finally:
+            validate.ORG_PATTERNS_FILE = original
+
+    def test_invalid_org_pattern_fails_closed(self):
+        pattern_file = Path(tempfile.mkdtemp(dir=self.root)) / 'private-patterns.local'
+        pattern_file.write_text('([unclosed\n')
+        original = validate.ORG_PATTERNS_FILE
+        validate.ORG_PATTERNS_FILE = pattern_file
+        try:
+            with self.assertRaisesRegex(validate.Invalid, 'PRIVATE_PATTERN_INVALID'):
+                validate.private_hits('anything')
+        finally:
+            validate.ORG_PATTERNS_FILE = original
+
 
 if __name__ == '__main__':
     unittest.main()

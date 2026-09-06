@@ -17,9 +17,11 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 SENSITIVE = {'DATABASE_URL', 'WEBUI_SECRET_KEY', 'OPENAI_API_KEY',
              'OAUTH_CLIENT_SECRET', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY'}
+# 通用模式入代码；组织专属私有值（内部域名、registry namespace 等）不入 git，
+# 由维护者在 scripts/private-patterns.local 维护（每行一个正则，# 为注释），参见 private-patterns.example。
 PRIVATE = re.compile(r'\b(?:192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)\b|'
-                     r'(?:example-org|example-org)\.com|example-org|images|'
                      r'registry\.cn-[\w-]+\.aliyuncs\.com/opsaid|ccr\.ccs\.tencentyun\.com/opsaid', re.I)
+ORG_PATTERNS_FILE = Path(__file__).parent / 'private-patterns.local'
 CREDENTIAL = re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bAKIA[A-Z0-9]{16}\b|\bghp_[A-Za-z0-9]{30,}\b|\bsk-[A-Za-z0-9_-]{24,}\b')
 
 
@@ -30,6 +32,19 @@ class Invalid(Exception):
 def require(condition, rule):
     if not condition:
         raise Invalid(rule)
+
+
+def private_patterns():
+    lines = ORG_PATTERNS_FILE.read_text().splitlines() if ORG_PATTERNS_FILE.exists() else []
+    try:
+        return [re.compile(line.strip(), re.I) for line in lines
+                if line.strip() and not line.lstrip().startswith('#')]
+    except re.error:
+        raise Invalid('PRIVATE_PATTERN_INVALID') from None
+
+
+def private_hits(text):
+    return bool(PRIVATE.search(text)) or any(pattern.search(text) for pattern in private_patterns())
 
 
 def documents(text):
@@ -82,11 +97,11 @@ def example_value(value):
 
 def check_public(objects):
     for obj in objects:
-        require(not PRIVATE.search(yaml.safe_dump(obj)), 'PRIVATE_ENVIRONMENT_VALUE')
+        require(not private_hits(yaml.safe_dump(obj)), 'PRIVATE_ENVIRONMENT_VALUE')
         require(not CREDENTIAL.search(yaml.safe_dump(obj)), 'CREDENTIAL_SIGNATURE')
         values = secret_data(obj) if obj.get('kind') == 'Secret' else obj.get('data', {})
         for key, value in values.items():
-            require(not PRIVATE.search(str(value)), 'PRIVATE_ENVIRONMENT_VALUE/' + key)
+            require(not private_hits(str(value)), 'PRIVATE_ENVIRONMENT_VALUE/' + key)
             require(not CREDENTIAL.search(str(value)), 'CREDENTIAL_SIGNATURE/' + key)
             if obj.get('kind') == 'Secret':
                 require(placeholder(value), 'SECRET_NOT_PLACEHOLDER/' + key)
@@ -211,7 +226,7 @@ def source_issues(path):
     text = path.read_text()
     issues = []
     for number, line in enumerate(text.splitlines(), 1):
-        if PRIVATE.search(line):
+        if private_hits(line):
             issues.append((number, 'PRIVATE_ENVIRONMENT_VALUE'))
         if CREDENTIAL.search(line):
             issues.append((number, 'CREDENTIAL_SIGNATURE'))
