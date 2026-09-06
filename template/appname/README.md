@@ -67,7 +67,7 @@ appname/
 | `configuration/` | `configmaps/`、`secrets/` 下的配置文件（如 `*.env`） |
 
 Ingress 默认 host 为占位值 `appname.example.com`（RFC 2606 保留域，不指向任何公司，且随应用名唯一）；
-复制模版后在 kustomization `patches` 中替换为实际域名（JSON6902，示例：`appname.dev.k8s.example.com`），
+复制模版后在 kustomization `patches` 中替换为实际域名（JSON6902），
 私有域名不得写入 `network/` 清单。
 
 其余目录（`clusters/`、`gateway/`、`network/`、`security/`、`storage/`、`workloads/`）

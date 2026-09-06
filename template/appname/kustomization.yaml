@@ -30,5 +30,5 @@ resources:
 - workloads/deployments/oneops-demo-v1.yaml
 
 images:
-- name: registry.example.com/opsaid/demo
+- name: registry.example.com/appname/demo
   newTag: 0.1.0

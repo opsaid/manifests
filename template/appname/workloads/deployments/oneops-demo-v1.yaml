@@ -30,7 +30,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: status.podIP
-        image: registry.example.com/opsaid/demo
+        image: registry.example.com/appname/demo
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
