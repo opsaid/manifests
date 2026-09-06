@@ -56,3 +56,20 @@ appname/
    保持资源名稳定），Deployment 侧以 `envFrom` 或 volume 挂载引用。
 
 5. 镜像版本统一在 kustomization `images` 中用 `newTag` 固定，清单内不写死 tag。
+
+## 最佳实践
+
+不同环境的差异变更仅收敛到两处，其余路径尽量不做自定义：
+
+| 路径 | 可变更内容 |
+| --- | --- |
+| `kustomization.yaml` | namespace、labels、generator、replicas、resources 引用、`images` 替换与版本固定、`patches`（Ingress host、ingressClassName 等字段替换） |
+| `configuration/` | `configmaps/`、`secrets/` 下的配置文件（如 `*.env`） |
+
+Ingress 默认 host 为占位值 `appname.example.com`（RFC 2606 保留域，不指向任何公司，且随应用名唯一）；
+复制模版后在 kustomization `patches` 中替换为实际域名（JSON6902，示例：`appname.dev.k8s.example.com`），
+私有域名不得写入 `network/` 清单。
+
+其余目录（`clusters/`、`gateway/`、`network/`、`security/`、`storage/`、`workloads/`）
+存放按模版整理的功能清单，保持与模版一致，不做环境级自定义。确需调整时先说明原因与方案，
+征得维护者同意后再执行。

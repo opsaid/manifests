@@ -1,0 +1,38 @@
+name: Validate manifests
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Install pinned build tools
+      shell: bash
+      run: |
+        set -euo pipefail
+        python -m pip install -r scripts/requirements.txt
+        version="$(cat scripts/kustomize-version.txt)"
+        asset="kustomize_${version}_linux_amd64.tar.gz"
+        release="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${version}"
+        directory="$(mktemp -d)"
+        trap 'rm -rf "$directory"' EXIT
+        curl -fsSL "$release/$asset" -o "$directory/$asset"
+        curl -fsSL "$release/checksums.txt" -o "$directory/checksums.txt"
+        (cd "$directory" && grep " ${asset}$" checksums.txt | sha256sum --check --strict -)
+        mkdir -p "$RUNNER_TEMP/addon-bin"
+        tar -xzf "$directory/$asset" -C "$RUNNER_TEMP/addon-bin" kustomize
+        echo "$RUNNER_TEMP/addon-bin" >> "$GITHUB_PATH"
+    - name: Build and check pilot contract
+      run: scripts/validate.sh --app open-webui
+    - name: Contract regression tests
+      run: python -m unittest discover -s scripts/tests -v
+    # 全仓公开审查是发布前独立门槛。旧 addon/文档尚未净化，不能以本 CI 通过宣称可公开。

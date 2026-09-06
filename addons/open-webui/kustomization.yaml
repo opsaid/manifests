@@ -1,0 +1,53 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: open-webui
+
+labels:
+- includeSelectors: false
+  includeTemplates: true
+  pairs:
+    opsaid.net/appname: open-webui
+
+configMapGenerator:
+- name: open-webui
+  envs:
+  - configuration/configmaps/open-webui.env
+  options:
+    disableNameSuffixHash: true
+
+secretGenerator:
+- name: open-webui
+  envs:
+  - configuration/secrets/open-webui.env
+  options:
+    disableNameSuffixHash: true
+
+replicas:
+- name: open-webui
+  count: 1
+
+resources:
+- clusters/namespaces/open-webui.yaml
+- security/serviceaccounts/open-webui-sa.yaml
+- network/services/open-webui.yaml
+- network/ingresses/open-webui.yaml
+- workloads/deployments/open-webui-redis.yaml
+- workloads/deployments/open-webui.yaml
+
+patches:
+# 公共 base 不预选环境中的 Ingress Controller；overlay 显式指定 class。
+- target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: open-webui
+  patch: |-
+    - op: remove
+      path: /spec/ingressClassName
+
+images:
+- name: ghcr.io/open-webui/open-webui
+  newTag: v0.11.3
+- name: redis
+  newTag: 7.4.2-alpine3.21

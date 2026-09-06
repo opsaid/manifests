@@ -1,0 +1,74 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: open-webui-example
+
+# 公开示例测试当前代码；复制到私有仓库后改为公共 Git URL + 固定发布 tag/SHA。
+resources:
+- ../../../addons/open-webui
+
+configMapGenerator:
+- name: open-webui
+  behavior: merge
+  envs:
+  - configuration/configmaps/open-webui.env
+  options:
+    disableNameSuffixHash: true
+
+secretGenerator:
+- name: open-webui
+  behavior: merge
+  envs:
+  - configuration/secrets/open-webui.env
+  options:
+    disableNameSuffixHash: true
+
+images:
+# 虚构镜像仓库仅用于演示；真实环境删除此覆盖或换成已同步相同版本的仓库。
+- name: ghcr.io/open-webui/open-webui
+  newName: registry.example.com/mirror/open-webui
+- name: redis
+  newName: registry.example.com/mirror/redis
+
+patches:
+- target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: open-webui
+  patch: |-
+    - op: replace
+      path: /spec/rules/0/host
+      value: open-webui.apps.example.com
+    - op: add
+      path: /spec/ingressClassName
+      value: nginx
+    - op: add
+      path: /spec/tls
+      value:
+      - hosts:
+        - open-webui.apps.example.com
+        secretName: open-webui-tls
+# 按容器名合并，不依赖 containers 数组中的顺序。
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: open-webui
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: open-webui
+    spec:
+      template:
+        metadata:
+          annotations:
+            opsaid.net/config-revision: "example-1"
+        spec:
+          containers:
+          - name: open-webui
+            resources:
+              requests:
+                cpu: "1"
+                memory: 2Gi

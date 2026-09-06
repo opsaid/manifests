@@ -7,7 +7,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: cd.cluster.local
+  - host: cd.example.com
     http:
       paths:
       - path: /

@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argo
+
+configMapGenerator:
+- name: workflow-controller-configmap
+#  files:
+#  - controller-config.yaml=config/configmap/controller-config.yaml
+  options:
+    disableNameSuffixHash: true
+
+#replicas:
+#- name: controller-manager
+#  count: 1
+
+resources:
+- cluster/crds.yaml
+- cluster/roles.yaml
+- cluster/namespace.yaml
+- service/services.yaml
+- service/ingresses.yaml
+- workloads/deployments/argo-server.yaml
+- workloads/deployments/workflow-controller.yaml
+
+patches:
+# Ingress 实际域名在此替换，不改动只读的 service/ 清单
+- patch: |-
+    - op: replace
+      path: /spec/rules/0/host
+      value: workflows.example.com
+  target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: workflows
+
+images:
+- name: registry.example.com/images/argocli
+  newTag: v3.5.7
+- name: registry.example.com/images/argo-workflow-controller
+  newTag: v3.5.7
