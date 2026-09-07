@@ -16,8 +16,10 @@ Redis `7.4.2-alpine3.21`；版本以入口为权威来源，文档不负责镜�
 本次从私有镜像地址恢复官方地址，不能假设两个地址下的内容完全相同。
 
 目前仅验证独立 Kustomize v5.0.0 的构建和合同用例；kubectl 内置 v4.5.7 另做本地渲染兼容检查。
-Kubernetes 版本、CPU 架构和运行环境尚未实测，不声明支持范围。官方镜像在当前固定 UID/GID 下的
-静态文件、HOME 和数据目录写权限仍需运行验证，不能为使其启动直接放宽到 root。
+Kubernetes 版本、CPU 架构和运行环境尚未实测，不声明支持范围。官方镜像默认以 root 构建，
+启动时会改写自带静态资源，镜像内静态目录按“属组 0 + g=u”交付（任意 UID 需属于 GID 0）。
+实测原 GID 1001 触发启动 EACCES 后，base 改为 `runAsUser: 1001` + `runAsGroup: 0`，
+保持非 root 与最低能力集，不放宽到 root；集群重启复验与 `HOME=/root` 缓存写入行为仍待验收。
 依据：[上游 Dockerfile](https://github.com/open-webui/open-webui/blob/v0.11.3/Dockerfile)。
 
 上游许可证见 [Open WebUI LICENSE](https://github.com/open-webui/open-webui/blob/v0.11.3/LICENSE)。

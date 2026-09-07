@@ -25,9 +25,11 @@ spec:
       automountServiceAccountToken: false
       serviceAccountName: open-webui-sa
       securityContext:
+        # 官方镜像默认以 root 构建，启动时改写 open_webui/static 下自带资源，
+        # 静态目录按属组 0 + g=u 交付（任意 UID 需属于 GID 0）；保持非 root。
         runAsNonRoot: true
         runAsUser: 1001
-        runAsGroup: 1001
+        runAsGroup: 0
         fsGroup: 1001
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
