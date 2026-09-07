@@ -21,6 +21,10 @@
   ([8aeb3ce](https://github.com/opsaid/manifests/commit/8aeb3ce))
 - 新增必填 Secret `WEBUI_SECRET_KEY`，保持会话签名密钥跨 Pod/worker 一致。
   ([8aeb3ce](https://github.com/opsaid/manifests/commit/8aeb3ce))
+- 包内 Redis 组件资源去前缀命名：Service/Deployment `open-webui-redis` → `redis`，
+  `REDIS_URL` 主机同步为 `redis.open-webui.svc.cluster.local`。引用旧资源名的脚本、
+  监控或 overlay patch 需相应更新；两个资源改名后按重建应用，主应用需滚动重启。
+  ([057494a](https://github.com/opsaid/manifests/commit/057494a))
 
 ### Feature
 
