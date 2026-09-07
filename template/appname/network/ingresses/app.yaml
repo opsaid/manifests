@@ -2,8 +2,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: oneops-demo-v1
-  namespace: biz-dev-uptime
+  name: demo-v1
+  namespace: appname
 spec:
   ingressClassName: cilium
   rules:
@@ -12,7 +12,7 @@ spec:
       paths:
       - backend:
           service:
-            name: oneops-demo-v1
+            name: demo-v1
             port:
               number: 80
         path: /

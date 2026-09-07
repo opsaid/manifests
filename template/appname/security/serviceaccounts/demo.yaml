@@ -3,4 +3,4 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: demo
-  namespace: biz-dev-uptime
+  namespace: appname

@@ -19,15 +19,14 @@ git clone --branch v3.1.7 --depth 1 https://github.com/argoproj/argo-cd.git
 ```shell
 cp -rp ../../../template/appname/* ./
 
-rm -rf clusters/namespaces/biz-dev-uptime.yaml
+rm -rf clusters/namespaces/appname.yaml
 rm -rf clusters/nodes/192.0.2.2.yaml
-rm -rf clusters/roles/demo.yaml
+rm -rf security/roles/demo.yaml security/rolebindings/demo.yaml security/serviceaccounts/demo.yaml
 
 rm -rf configuration/configmaps/app.yaml
 rm -rf configuration/secrets/app.yaml
 
-rm -rf workloads/deployments/oneops-demo-v1.yaml
-rm -rf configuration/configmaps/app.yaml
+rm -rf workloads/deployments/demo-v1.yaml
 ```
 
 ### 制作部署

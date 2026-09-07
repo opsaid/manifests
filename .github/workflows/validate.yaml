@@ -35,4 +35,7 @@ jobs:
       run: scripts/validate.sh --app open-webui
     - name: Contract regression tests
       run: python -m unittest discover -s scripts/tests -v
-    # 全仓公开审查是发布前独立门槛。旧 addon/文档尚未净化，不能以本 CI 通过宣称可公开。
+    - name: Public source audit
+      run: scripts/validate.sh --audit-public
+    # 全仓公开审查是发布前独立门槛；CI 仅内置通用模式，不含组织专属模式与 Git 历史，
+    # 构建通过不代表完成公开审查。

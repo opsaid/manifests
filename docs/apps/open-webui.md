@@ -1,7 +1,7 @@
 # Open WebUI 接入说明
 
-状态：本地试点，尚未完成目标集群运行、全仓公开审查和商店版本发布。
-`catalog.yaml` 暂无上架条目，不要将本说明中的版本号视为已有商店 tag。
+状态：本地试点，尚未完成目标集群运行验收和商店版本发布；全仓净化与历史改写已完成，
+人工公开复核与仓库可见性切换仍待完成。`catalog.yaml` 暂无上架条目，不要将本说明中的版本号视为已有商店 tag。
 
 维护入口：[addon-maintenance](../../.agents/skills/addon-maintenance/SKILL.md)。
 公共合同：[Addon Store 规范](../../.agents/skills/addon-maintenance/references/addon-store.md)。

@@ -14,8 +14,8 @@
 - 真实域名、私有 registry、内网地址等非凭据环境值放在独立私有仓库；密码、Token、带凭据的
   URL 在公共及私有 Git 中均不得明文提交，Secret.data 的 Base64 编码也不视为加密保护。
 - 引用 `addons/<app>` 子目录、按应用打 tag、将文件放到 `secrets/` 都不提供 Git 访问隔离。
-- 存量 addon（argo-cd、argo-events、argo-workflows）按商店标准分批迁移；迁移完成前其目录内的
-  真实环境值是公开发布的阻塞项，公开前必须完成中性化并检查全部发布内容和可访问历史。
+- 存量 addon（argo-cd、argo-events、argo-workflows）按商店标准分批迁移，迁移完成前不登记上架；
+  其最小中性化与历史改写已完成，公开内容与可访问历史仍须持续满足上一条的真实值禁入要求。
 
 ## 2. 应用包与商店索引
 

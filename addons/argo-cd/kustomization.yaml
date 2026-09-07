@@ -43,9 +43,5 @@ patches:
 images:
 - name: redis:7.2.7-alpine
   newTag: 7.2.7-alpine
-- name: public.ecr.aws/docker/library/redis
-  newTag: 7.2.7-alpine
 - name: quay.io/argoproj/argocd
   newTag: v3.1.7
-- name: ghcr.io/dexidp/dex
-  newTag: v2.43.0

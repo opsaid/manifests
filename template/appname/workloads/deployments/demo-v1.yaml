@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: oneops-demo-v1
+  name: demo-v1
 spec:
   revisionHistoryLimit: 3
   strategy:
@@ -17,7 +17,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchLabels:
-                opsaid.net/appname: oneops-demo-v1
+                opsaid.net/appname: demo-v1
             topologyKey: kubernetes.io/hostname
       containers:
       - args:
@@ -25,7 +25,7 @@ spec:
         - --config
         - /opt/config/app.yaml
         env:
-        - name: GRPC_KIT_PUHLIC_IP
+        - name: GRPC_KIT_PUBLIC_IP
           valueFrom:
             fieldRef:
               apiVersion: v1
@@ -40,11 +40,11 @@ spec:
           tcpSocket:
             port: 10081
           timeoutSeconds: 5
-        name: oneops-demo-v1
+        name: demo-v1
         readinessProbe:
           failureThreshold: 3
           httpGet:
-            path: /healthz?service=demo.v1.oneops
+            path: /healthz?service=demo.v1
             port: 10080
             scheme: HTTP
           initialDelaySeconds: 15
@@ -85,6 +85,6 @@ spec:
       - name: config-volume
         configMap:
           defaultMode: 420
-          name: oneops-demo-v1
+          name: demo-v1
       - name: applog-volume
         emptyDir: {}

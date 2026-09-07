@@ -78,6 +78,9 @@ Ingress/open-webui/spec/rules/0/host
 
 ## 尚未完成的门槛
 
+> 注：本节为实施当时的快照。工作区环境值、旧应用中性化决策、open-webui README 清理及
+> 提交推送已由下方「后续推进」在同日解决，其余仍为实际待办。
+
 - 未获得私有配置仓库、测试集群 context/namespace 和可用密钥来源，因此未执行真实 apply、rollout、登录或数据恢复测试。
 - 全仓工作区扫描发现 13 处已知环境值，分布在旧 addon、模板及只读 README；此计数不是所有敏感信息的完整清单。
 - 对当前本地可见的全部 Git 提交执行已知值模式搜索，确认 3 个提交（模板重构、argo-cd 与
@@ -100,3 +103,18 @@ Ingress/open-webui/spec/rules/0/host
 - origin 重建并强推 main；仓库可见性切换与 GitHub Actions 首次远程运行待确认。
 - 仍未完成：真实集群运行验收、发布 tag 与 catalog 登记、私有环境仓库建设；pre-rewrite 备份
   bundle 含原始真实值，仅存于本机临时目录，确认公开状态后由维护者删除或转存离线。
+
+## 后续推进（2026-09-07 整改）
+
+- 删除 `addons/argo-workflows/install.yaml`：该文件未被任何 kustomization 引用（死文件），
+  且残留真实内网 S3 端点与桶名——该值不在已知模式黑名单内，此前 `--audit-public` 的 0 发现
+  未覆盖它（manual_review=REQUIRED 的真实案例）。删除后渲染资源数不变；若历史中的该端点视为
+  需清除的标识，需再执行一轮历史改写并强推（本地备份 bundle 可作依据）。
+- 模板占位值中性化：namespace 与应用名统一为 `appname` / `demo-v1`，移除部署身份 UUID 标签
+  （与 open-webui 中性化口径一致），修正示例 env 拼写并补齐空示例配置；argo-cd README 制作
+  命令同步文件名并修正失效路径。渲染仍为 4 个资源。
+- `private-patterns.local` 补充内网子域、旧环境命名与身份标签值的模式防止回归（仅本地生效，
+  不入库）。
+- argo-cd kustomization 移除无引用的 dex 与 ECR redis 镜像条目，前后渲染哈希一致。
+- 移除被追踪的 .DS_Store 并补 .gitignore；CI 新增 `--audit-public` 步骤（不含组织专属模式
+  与 Git 历史）；修正根 README、应用接入说明与公共规范中停留在净化完成前的过时表述。

@@ -1,6 +1,6 @@
 # manifests
 
-对各开源服务经过整理编排后，在结合 [deploy-k8s](https://github.com/opsaid/deploy-k8s) 项目，实现一键部署。
+对各开源服务经过 Kustomize 整理编排的公共应用清单仓库（公共 base 与私有环境配置分仓），再结合 [deploy-k8s](https://github.com/opsaid/deploy-k8s) 项目完成部署。
 
 ## 应用商店（试点）
 
@@ -18,5 +18,6 @@ scripts/validate.sh --app open-webui
 python3 -m unittest discover -s scripts/tests -v
 ```
 
-全仓公开检查另运行 `scripts/validate.sh --audit-public`；当前旧应用、模板和历史仍有待清理内容，
-构建通过不代表整个仓库已经完成公开审查。
+全仓公开检查另运行 `scripts/validate.sh --audit-public`：全仓净化与历史改写已完成，当前为
+0 发现。该检查不含 Git 历史与组织专属模式（`private-patterns.local` 不入库），构建通过不代表
+完成公开审查，发布前人工复核仍是必要门槛。

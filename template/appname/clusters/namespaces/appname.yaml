@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: biz-dev-uptime
+  name: appname
 
 ---
 apiVersion: v1
 kind: LimitRange
 metadata:
   name: limit-range
-  namespace: biz-dev-uptime
+  namespace: appname
 spec:
   limits:
   - default:
@@ -25,7 +25,7 @@ apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: memory-quota
-  namespace: biz-dev-uptime
+  namespace: appname
 spec:
   hard:
     requests.memory: 10Gi

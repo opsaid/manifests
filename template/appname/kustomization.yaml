@@ -1,33 +1,29 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: biz-dev-uptime
+namespace: appname
 
 labels:
 - includeSelectors: false
   includeTemplates: true
   pairs:
-    opsaid.net/appname: oneops-demo-v1
-    opsaid.net/pm2-uuid: 3264e3fe-2bce-4835-8588-99651a8ddd3b
-
-commonAnnotations:
-  opsaid.net/pm2-uuid: 3264e3fe-2bce-4835-8588-99651a8ddd3b
+    opsaid.net/appname: demo-v1
 
 configMapGenerator:
-- name: oneops-demo-v1
+- name: demo-v1
   files:
   - app.yaml=configuration/configmaps/app.yaml
   options:
     disableNameSuffixHash: true
 
 replicas:
-- name: oneops-demo-v1
+- name: demo-v1
   count: 1
 
 resources:
 - network/services/app.yaml
 - network/ingresses/app.yaml
-- workloads/deployments/oneops-demo-v1.yaml
+- workloads/deployments/demo-v1.yaml
 
 images:
 - name: registry.example.com/appname/demo
