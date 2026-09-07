@@ -1,5 +1,5 @@
 apiVersion: opsaid.net/addon-store/v1alpha1
 kind: AddonCatalog
 # open-webui 是本地试点，运行验收和远程发布尚未完成，暂不上架。
-# 接入进度与试点说明见 docs/apps/open-webui.md。
+# 接入进度与试点说明见 docs/open-webui/README.md。
 items: []

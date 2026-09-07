@@ -102,7 +102,7 @@ embedding / reranking 均不使用本地模型，仅对本地模型生效的 `*_
 ### OAuth / OIDC 单点登录
 
 OAuth 参数由租户按身份提供方配置，`OAUTH_CLIENT_SECRET` 在 secrets env（占位符 `CHANGE_ME`）；
-base 默认关闭 OIDC 注册与角色/分组管理，输入项见 [应用接入说明](../../docs/apps/open-webui.md)。
+base 默认关闭 OIDC 注册与角色/分组管理，输入项见 [应用接入说明](../../docs/open-webui/README.md)。
 注意：`OPENID_REDIRECT_URI` 按租户域名配置（base 占位为 `http://open-webui.example.com/oauth/oidc/callback`），
 需在身份提供方（如 GoChat）注册该回调地址。
 

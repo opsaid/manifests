@@ -142,3 +142,9 @@ Ingress/open-webui/spec/rules/0/host
 - argo-cd kustomization 移除无引用的 dex 与 ECR redis 镜像条目，前后渲染哈希一致。
 - 移除被追踪的 .DS_Store 并补 .gitignore；CI 新增 `--audit-public` 步骤（不含组织专属模式
   与 Git 历史）；修正根 README、应用接入说明与公共规范中停留在净化完成前的过时表述。
+- 文档目录按应用重组（维护者指示）：`docs/apps/open-webui.md` 经 `git mv` 迁至
+  `docs/open-webui/README.md`（后续应用各自建 `docs/<app>/` 目录，专项文档同目录）；
+  新增 `docs/open-webui/postgres.md` 操作手册（建库与账号、pgvector 扩展、连接串对接、
+  网络访问、备份与升级、验收清单，全部使用占位值），接入说明顶部链接与依赖表指向该文档。
+  根 README、catalog.yaml、addon README、规范 §2/§3、SKILL.md、示例 README 与计划文档中的
+  `docs/apps` 路径引用全部同步；验证（--app 6 入口、22 项合同测试、--audit-public 0 发现）通过。

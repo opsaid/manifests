@@ -35,7 +35,7 @@ items:
     name: Open WebUI
     description: 基于外部数据库和对象存储的对话界面
     path: addons/open-webui
-    docs: docs/apps/open-webui.md
+    docs: docs/open-webui/README.md
     upstream: https://github.com/open-webui/open-webui
 ```
 
@@ -47,7 +47,8 @@ items:
 
 ## 3. 应用接入文档
 
-每个登记应用必须提供 `docs/apps/<id>.md`，至少包含以下内容：
+每个登记应用必须提供 `docs/<id>/README.md`（依赖操作等专项文档放同目录，如
+`docs/<id>/postgres.md`），至少包含以下内容：
 
 | 项目 | 必须说明 |
 | --- | --- |

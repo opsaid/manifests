@@ -13,7 +13,7 @@ description: 在 manifests 仓库制作、修改、升级或评审 Kustomize 应
 
 ## 工作流程
 
-1. 检查工作区已有改动，读取目标应用入口、被引用的配置与资源，以及 `docs/apps/<app>.md`
+1. 检查工作区已有改动，读取目标应用入口、被引用的配置与资源，以及 `docs/<app>/README.md`
    （存在时）。区分公共默认值、环境差异、凭据及应用结构变化。
 2. 公共默认值维护在 `addons/<app>/`；真实差异维护在私有仓库 overlay；
    `examples/overlays/<app>/` 只保存完整的虚构环境示例。具体接口与发布要求以公共规范为准。

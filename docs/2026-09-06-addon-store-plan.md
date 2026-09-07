@@ -55,7 +55,7 @@
 ├── .agents/skills/addon-maintenance/ # 技能正文唯一来源
 │   ├── SKILL.md                     # 触发范围与维护流程
 │   └── references/addon-store.md    # 公共规范的唯一来源
-├── docs/apps/<app>.md               # 应用依赖、输入、运行和升级说明
+├── docs/<app>/README.md             # 应用依赖、输入、运行和升级说明（专项文档同目录）
 ├── docs/*-plan.md                   # 阶段计划，不作为规范入口
 ├── scripts/                        # 构建与校验程序
 └── CHANGELOG/<app>/CHANGELOG-v<major>.md   # 按应用版本线记录模板发布
@@ -69,7 +69,7 @@
 ```
 
 `.agents/skills/addon-maintenance/SKILL.md` 保存短流程，`references/addon-store.md` 保存规范全文；
-删除 `spec/`，不留副本。`docs/apps/` 描述应用特例，`examples/` 保存受校验示例，
+删除 `spec/`，不留副本。`docs/<app>/` 描述应用特例，`examples/` 保存受校验示例，
 根 `scripts/` 供 AI 与 CI 共用。`AGENTS.md` 引用技能入口并保留全局编辑边界。
 Codex 从 `.agents/skills/` 发现技能；Claude Code 通过 `.claude/skills/addon-maintenance`
 符号链接读取同一份正文。根 `CLAUDE.md` 使用 `@AGENTS.md` 导入统一规则，其他 agent 可从
@@ -104,7 +104,7 @@ AGENTS.md 的链接读取技能。不同工具的入口可以不同，规则及�
 
 ### Task 2：固化公共规范与应用接入说明
 
-涉及：`.agents/skills/addon-maintenance/`（规范迁入 references，SKILL.md 仅维护流程）、`docs/apps/open-webui.md`；后续按已落实范围更新 `AGENTS.md` 引用。
+涉及：`.agents/skills/addon-maintenance/`（规范迁入 references，SKILL.md 仅维护流程）、`docs/apps/open-webui.md`（现为 `docs/open-webui/README.md`）；后续按已落实范围更新 `AGENTS.md` 引用。
 
 - [x] 按维护者本轮指示迁移至 `.agents/skills/`：规范只在 references 保存，SKILL.md 保存流程，AGENTS.md 引用入口。
 - [x] 固定 CI Kustomize v5.0.0，定义部署执行方注入 Secret、一应用一 namespace 的首期方式。

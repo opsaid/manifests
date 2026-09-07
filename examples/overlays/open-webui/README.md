@@ -9,4 +9,4 @@
 TLS Secret `open-webui-tls` 由平台预先提供；或取消 kustomization 内注释的 secretGenerator，
 改由 `configuration/secrets/tls/` 下的证书文件生成（二选一，不得并存）。namespace 必须匹配。
 
-完整输入、构建与更新步骤见 [应用接入说明](../../../docs/apps/open-webui.md)。
+完整输入、构建与更新步骤见 [应用接入说明](../../../docs/open-webui/README.md)。

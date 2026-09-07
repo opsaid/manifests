@@ -6,6 +6,7 @@
 维护入口：[addon-maintenance](../../.agents/skills/addon-maintenance/SKILL.md)。
 公共合同：[Addon Store 规范](../../.agents/skills/addon-maintenance/references/addon-store.md)。
 完整示例：[examples/overlays/open-webui](../../examples/overlays/open-webui/kustomization.yaml)。
+依赖操作：[PostgreSQL 准备](./postgres.md)（建库、账号、pgvector 扩展、备份与验收）。
 
 ## 来源与实测范围
 
@@ -30,7 +31,7 @@ Kubernetes 版本、CPU 架构和运行环境尚未实测，不声明支持范�
 
 | 依赖 | 准备方与条件 |
 | --- | --- |
-| PostgreSQL | 平台提供库、账号与网络访问，准备 vector 扩展；应用启动会涉及数据迁移，升级前备份 |
+| [PostgreSQL](./postgres.md) | 平台提供库、账号与网络访问，准备 vector 扩展；应用启动会涉及数据迁移，升级前备份 |
 | S3 | 平台准备桶、区域、访问权限和凭据；自建兼容服务额外指定 endpoint |
 | 模型 API | 提供可用的 API 基址、凭据和 embedding 模型；默认使用外部 embedding，不下载本地模型 |
 | Ingress Controller | 平台安装并提供 ingressClassName；base 未选择 controller |
