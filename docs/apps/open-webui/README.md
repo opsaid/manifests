@@ -3,15 +3,15 @@
 状态：本地试点，尚未完成目标集群运行验收和商店版本发布；全仓净化与历史改写已完成，
 人工公开复核与仓库可见性切换仍待完成。`catalog.yaml` 暂无上架条目，不要将本说明中的版本号视为已有商店 tag。
 
-维护入口：[addon-maintenance](../../.agents/skills/addon-maintenance/SKILL.md)。
-公共合同：[Addon Store 规范](../../.agents/skills/addon-maintenance/references/addon-store.md)。
-完整示例：[examples/overlays/open-webui](../../examples/overlays/open-webui/kustomization.yaml)。
+维护入口：[addon-maintenance](../../../.agents/skills/addon-maintenance/SKILL.md)。
+公共合同：[Addon Store 规范](../../spec/addon-store.md)。
+完整示例：[examples/overlays/open-webui](../../../examples/overlays/open-webui/kustomization.yaml)。
 依赖操作：[PostgreSQL 准备](./postgres.md)（建库、账号、pgvector 扩展、备份与验收）。
 
 ## 来源与实测范围
 
 资源整理依据为上游 chart `open-webui-16.1.0`（沿用现有清单记录）。应用镜像由
-[base 入口](../../addons/open-webui/kustomization.yaml) 固定为 Open WebUI `v0.11.3` 和
+[base 入口](../../../addons/open-webui/kustomization.yaml) 固定为 Open WebUI `v0.11.3` 和
 Redis `7.4.2-alpine3.21`；版本以入口为权威来源，文档不负责镜像替换。
 本次从私有镜像地址恢复官方地址，不能假设两个地址下的内容完全相同。
 
@@ -49,7 +49,7 @@ Kubernetes 版本、CPU 架构和运行环境尚未实测，不声明支持范�
 
 非凭据值在 overlay `configuration/configmaps/open-webui.env`；凭据由
 `configuration/secrets/open-webui.env` 的同名 generator 合并。未列出的键继承 base，
-具体调优默认值以 [base env](../../addons/open-webui/configuration/configmaps/open-webui.env) 为准。
+具体调优默认值以 [base env](../../../addons/open-webui/configuration/configmaps/open-webui.env) 为准。
 下表中的运行参数经 env/envFrom 注入，更新后都需要替换 Pod 才能保证生效。
 
 | 输入 | 位置 | 必填条件 / 默认行为 |
@@ -95,7 +95,7 @@ OIDC 注册条件与会话密钥依据 [上游 config.py](https://github.com/ope
    OIDC 启用时再加 OAUTH_CLIENT_SECRET。不要把秘密通过命令行参数传递，不要启用 shell tracing。
 5. 在具有固定 Kustomize、Git 和 PyYAML 的受控执行环境运行下面的构建及部署步骤。
 
-本仓库工具安装：独立 Kustomize 版本见 `scripts/kustomize-version.txt`，
+以下仓库工具命令从 manifests 仓库根目录执行。独立 Kustomize 版本见 `scripts/kustomize-version.txt`，
 Python 3.9+，`python3 -m pip install -r scripts/requirements.txt`。
 
 ```bash
@@ -138,7 +138,7 @@ Python 3.9+，`python3 -m pip install -r scripts/requirements.txt`。
 需测试上传后重建再读取、会话行为和 Redis 重建影响；新增 PVC 或变更功能资源须按仓库规则处理。
 
 旧入口切换前，比较资源身份、镜像内容、env 键、权限/UID、探针、存储与 namespace。
-本次明确变化见 [CHANGELOG/open-webui/CHANGELOG-v0.md](../../CHANGELOG/open-webui/CHANGELOG-v0.md)：尤其是官方镜像、证书校验、OIDC 默认行为和新签名密钥。
+本次明确变化见 [CHANGELOG/open-webui/CHANGELOG-v0.md](../../../CHANGELOG/open-webui/CHANGELOG-v0.md)：尤其是官方镜像、证书校验、OIDC 默认行为和新签名密钥。
 仅修改 Git ref 不能恢复数据库版本，备份和迁移兼容性须先验证。
 
 上架前完成：目标架构镜像拉取、非 root 启动/写目录、探针、数据库/pgvector、上传与读取、模型调用，

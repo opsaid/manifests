@@ -48,7 +48,8 @@
 
 制作、修改、升级或评审应用与 overlay 时，读取
 [addon-maintenance 技能](.agents/skills/addon-maintenance/SKILL.md)，并按其引用读取公共规范。
-公共规范只保存在技能的 `references/`，本文件保留全局编辑权限约束，不重复规范正文。
+公共规范只保存在 [docs/spec/addon-store.md](docs/spec/addon-store.md)，技能引用该唯一正文；
+本文件保留全局编辑权限约束，不重复规范正文。
 现有 addon 按计划逐步迁移，不因技能建立而自动成为已发布的商店应用。
 
 ## Agent 兼容入口

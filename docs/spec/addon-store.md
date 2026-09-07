@@ -2,7 +2,7 @@
 
 状态：首期试点规范；本地工具和 open-webui overlay 已落实，运行及发布门槛尚未完成。
 适用于准备上架的应用，当前不声明全部 addon 已符合。
-本文中的“必须”表示上架或部署验收条件；不会覆盖 [AGENTS.md](../../../../AGENTS.md) 的修改权限约束。
+本文中的“必须”表示上架或部署验收条件；不会覆盖 [AGENTS.md](../../AGENTS.md) 的修改权限约束。
 
 ## 1. 范围与边界
 
@@ -35,7 +35,7 @@ items:
     name: Open WebUI
     description: 基于外部数据库和对象存储的对话界面
     path: addons/open-webui
-    docs: docs/open-webui/README.md
+    docs: docs/apps/open-webui/README.md
     upstream: https://github.com/open-webui/open-webui
 ```
 
@@ -47,8 +47,8 @@ items:
 
 ## 3. 应用接入文档
 
-每个登记应用必须提供 `docs/<id>/README.md`（依赖操作等专项文档放同目录，如
-`docs/<id>/postgres.md`），至少包含以下内容：
+每个登记应用必须提供 `docs/apps/<id>/README.md`（依赖操作等专项文档放同目录，如
+`docs/apps/<id>/postgres.md`），至少包含以下内容：
 
 | 项目 | 必须说明 |
 | --- | --- |
@@ -63,6 +63,21 @@ items:
 应用特例写在应用文档，不扩张为所有应用必须实现的通用配置项。
 不将 OAuth 合并账号、放宽角色、关闭 TLS 校验等租户策略直接作为通用默认。
 更换官方/镜像仓库地址前，必须确认镜像内容与所需权限、目录和功能的兼容性。
+
+### 3.1 文档分类与权威来源
+
+- `docs/README.md` 提供文档导航；`docs/apps/<id>/` 覆盖应用安装、配置、依赖、升级和运维，
+  目录名与 `addons/<id>/` 的应用 ID 一致。内容较少时以 README 为入口，专项内容按需拆分。
+- `addons/<id>/README.md` 记录上游来源、制作过程及与上游的结构差异；当前输入和运行要求
+  引用应用接入文档。接入文档仍须保留上表要求的来源摘要，避免复制整套制作或安装说明。
+- `examples/overlays/<id>/README.md` 说明可构建示例的用法，并引用应用输入表。
+- `docs/spec/` 保存长期规范，本文件是 Addon Store 公共规范的唯一正文；Agent 技能引用
+  本文件并维护执行流程，不另存一份规范。
+- `docs/plan/` 保存有明确范围的实施方案；`docs/addon-store-status.md` 是商店整体进度的
+  唯一入口；`CHANGELOG/<id>/` 记录应用发布影响。计划中的目标规则在落入规范前不替代现行合同。
+
+文档移动时必须同步索引、技能及仓库内引用，检查移动后文件中的相对链接。目录中的文档存在
+不表示应用已上架；上架状态仍以完成验收后的 catalog 登记和发布流程为准。
 
 ## 4. Overlay 接口
 
@@ -164,4 +179,4 @@ CI 必须固定构建工具版本，并校验源文件与解析后的渲染结�
 namespace/连接字符串联动、patch 目标、关键资源身份与引用；同时验证错误配置确实失败。
 不同工具的兼容范围必须来自实际验证；本地可用的 kubectl 不自动成为 CI 标准。
 
-实施进度与待办见 [Addon Store 状态](../../../../docs/addon-store-status.md)。
+实施进度与待办见 [Addon Store 状态](../addon-store-status.md)。

@@ -7,8 +7,9 @@
 采用 Kustomize base + overlay：公共应用在 `addons/`，真实环境配置在独立私有仓库。
 目前 open-webui 已完成本地构建与合同测试，尚未完成运行和公开发布验收，`catalog.yaml` 暂无上架条目。
 
-- [open-webui 接入说明](docs/open-webui/README.md)、[PostgreSQL 依赖准备](docs/open-webui/postgres.md)与[完整公开示例](examples/overlays/open-webui/README.md)
-- [AI 应用维护技能](.agents/skills/addon-maintenance/SKILL.md)与[公共规范](.agents/skills/addon-maintenance/references/addon-store.md)
+- [文档导航](docs/README.md)：应用接入、公共规范与实施计划
+- [open-webui 接入说明](docs/apps/open-webui/README.md)、[PostgreSQL 依赖准备](docs/apps/open-webui/postgres.md)与[完整公开示例](examples/overlays/open-webui/README.md)
+- [AI 应用维护技能](.agents/skills/addon-maintenance/SKILL.md)与[公共规范](docs/spec/addon-store.md)
 - [实施进度与待办](docs/addon-store-status.md)
 
 安装 `scripts/requirements.txt` 中的 Python 依赖及 `scripts/kustomize-version.txt` 指定的工具后，执行：

@@ -1,7 +1,7 @@
 # Addon Store 状态与待办
 
 本文是商店建设的唯一进度入口，随实际状态更新。长期规范只维护在
-[Addon Store 公共规范](../.agents/skills/addon-maintenance/references/addon-store.md)；
+[Addon Store 公共规范](spec/addon-store.md)；
 过程性实施决策与逐日证据不再作为活文档维护，历史内容见 Git 历史
 （原 2026-09-06 计划与执行记录，已并入本文的活跃部分）。
 
@@ -10,9 +10,12 @@
 - 仓库内实现完成；公开发布前置（全仓净化、历史改写、推送）已完成，
   人工公开复核与仓库可见性切换待确认。
 - open-webui 为唯一试点：base、公开示例、校验器、[CHANGELOG](../CHANGELOG/README.md)
-  与[应用文档](open-webui/README.md)齐备；尚未集群验收，未上架（`catalog.yaml` 无条目，
+  与[应用文档](apps/open-webui/README.md)齐备；尚未集群验收，未上架（`catalog.yaml` 无条目，
   不通过文档存在推断发布状态）。
 - 私有环境配置仓库尚未建设；真实环境差异维护在独立私有仓库 overlay。
+- 文档分类已落实：应用接入位于 `docs/apps/<id>/`，公共规范位于 `docs/spec/`，
+  [文档导航](README.md)提供统一入口。后续模板、校验器及应用结构迁移见
+  [目录与命名改进计划](plan/2026-09-07-addon-store-structure-improvement.md)，尚未实施。
 
 ## 发布前门槛
 
@@ -53,5 +56,5 @@
 | 受限网络无法访问公共 Git | vendor 固定提交并记录来源、许可证和更新 diff |
 | 多环境反复复制公共差异 | 在私有仓库引入一层共享 overlay，避免预先堆叠公司/集群/地域层级 |
 | GitOps 持续调谐密钥 | 选择已有 Secret 管理方案，定义资源 ownership 和更新方式 |
-| 制作/升级步骤反复执行 | 按实际需要拆分 skill，统一引用现有 references 规范及根 scripts |
+| 制作/升级步骤反复执行 | 按实际需要拆分 skill，统一引用 docs/spec 公共规范及根 scripts |
 | argo-cd 等后续应用上架 | 单独盘点 files generator、CRD/ClusterRole 所有权、权限和升级行为 |
