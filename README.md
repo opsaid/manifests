@@ -9,7 +9,7 @@
 
 - [open-webui 接入说明](docs/open-webui/README.md)、[PostgreSQL 依赖准备](docs/open-webui/postgres.md)与[完整公开示例](examples/overlays/open-webui/README.md)
 - [AI 应用维护技能](.agents/skills/addon-maintenance/SKILL.md)与[公共规范](.agents/skills/addon-maintenance/references/addon-store.md)
-- [实施计划](docs/2026-09-06-addon-store-plan.md)与[执行记录](docs/2026-09-06-addon-store-execution.md)
+- [实施进度与待办](docs/addon-store-status.md)
 
 安装 `scripts/requirements.txt` 中的 Python 依赖及 `scripts/kustomize-version.txt` 指定的工具后，执行：
 
