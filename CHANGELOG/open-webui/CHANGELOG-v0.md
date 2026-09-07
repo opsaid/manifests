@@ -33,6 +33,14 @@
   合法 TLS Secret（可选第 10 个资源，类型与键名必须正确）。
   ([41c9c1f](https://github.com/opsaid/manifests/commit/41c9c1f))
 
+### Bug or Regression
+
+- 修复默认 securityContext 与官方镜像权限模型不兼容：镜像启动时改写 `open_webui/static`
+  下自带静态资源，目录按属组 0 + `chmod g=u` 交付并要求进程属于 GID 0；原 `runAsGroup: 1001`
+  导致启动阶段写入 EACCES。改为 `runAsUser: 1001` + `runAsGroup: 0`，非 root 与
+  drop ALL capabilities 不变。
+  ([8fd3b27](https://github.com/opsaid/manifests/commit/8fd3b27))
+
 ### Dependencies
 
 - 保留 Open WebUI v0.11.3、Redis 7.4.2-alpine3.21；改用官方镜像地址，运行兼容性待验收。
