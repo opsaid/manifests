@@ -52,6 +52,10 @@
 
 ### Other (Cleanup or Flake)
 
+- 本轮未发布目录整理：Redis Service 拆至 `network/services/redis.yaml`，入口引用同步更新，
+  渲染对象保持一致；制作说明与接入文档职责分离，修正证书校验与数据持久化边界描述，
+  新增[运行验收步骤](../../docs/apps/open-webui/acceptance.md)。
+  ([77efc1c](https://github.com/opsaid/manifests/commit/77efc1c))
 - 明确公开口径：组织公共镜像仓库（registry.cn-hangzhou.aliyuncs.com/opsaid）与 namespace 属公开
   标识，公共示例直接使用真实值；私密配置与主机 IP 仍禁止出现在公共内容中。
   ([9d71893](https://github.com/opsaid/manifests/commit/9d71893))
