@@ -2,7 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 # 公开示例测试当前代码；复制到私有仓库后改为公共 Git URL + 固定发布 tag/SHA。
-# namespace 与镜像 tag 均继承 base，generator options（稳定名）也随 merge 继承；只写差异。
+# namespace 显式设置：overlay 本地生成的资源（如下方 TLS Secret）靠它落到正确 namespace。
+# 镜像 tag 与 generator options（稳定名）继承 base，只写差异。
+namespace: open-webui
+
 resources:
 - ../../../addons/open-webui
 
@@ -17,6 +20,17 @@ secretGenerator:
   behavior: merge
   envs:
   - configuration/secrets/open-webui.env
+
+# TLS 证书示例（默认不开启）：取消注释并把证书文件放到 configuration/secrets/tls/ 下，
+# open-webui-tls 即改由本清单管理；与平台预置的同名 Secret 不得并存（管理来源必须唯一）。
+# secretGenerator:
+# - name: open-webui-tls
+#   files:
+#   - tls.crt=configuration/secrets/tls/tls.crt
+#   - tls.key=configuration/secrets/tls/tls.key
+#   type: kubernetes.io/tls
+#   options:
+#     disableNameSuffixHash: true
 
 images:
 # 组织公共镜像仓库（公开标识，不属于私密值）；仅写 newName，tag 继承 base 固定版本。

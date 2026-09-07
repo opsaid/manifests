@@ -37,7 +37,9 @@
 
 1. 提交前对改动的应用目录执行 `kustomize build addons/<appname>` 验证可渲染、资源数量与内容符合预期。
 2. 敏感信息（密码、API Key、client secret 等）不得写入 git：`configuration/secrets/` 中使用
-   `CHANGE_ME` 等占位符，部署前线下填写真实值。
+   `CHANGE_ME` 等占位符，部署前线下填写真实值。TLS 证书文件（`tls.crt`/`tls.key`）是唯一例外，
+   允许提交在 overlay 的 `configuration/secrets/` 下通过 files 型 secretGenerator 交付；
+   公共仓库示例只保留默认关闭的注释配置，不放真实证书。
 3. 镜像版本统一在 `kustomization.yaml` 的 `images` 中固定，清单内不写死 tag；清单中的镜像保持
    官方值，替换到私有 registry 通过 `images` 的 `newName` 实现。
 4. 目录划分、占位约定与使用规则见 `template/appname/README.md`。

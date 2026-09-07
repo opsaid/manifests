@@ -34,7 +34,7 @@ Kubernetes 版本、CPU 架构和运行环境尚未实测，不声明支持范�
 | S3 | 平台准备桶、区域、访问权限和凭据；自建兼容服务额外指定 endpoint |
 | 模型 API | 提供可用的 API 基址、凭据和 embedding 模型；默认使用外部 embedding，不下载本地模型 |
 | Ingress Controller | 平台安装并提供 ingressClassName；base 未选择 controller |
-| TLS Secret | 启用 TLS 时平台在应用 namespace 中预先提供；本包不创建证书/Issuer |
+| TLS Secret | 启用 TLS 时二选一：平台在应用 namespace 预置，或 overlay 用 files 型 secretGenerator 从 `configuration/secrets/` 证书文件生成（示例默认关闭）；两个来源不得并存 |
 | 官方或镜像仓库 | 执行方确认镜像可拉取、目标架构匹配；镜像仓库应已同步相同版本 |
 | OIDC / OTEL | 可选；启用前准备服务端配置、回调和网络访问 |
 
@@ -51,7 +51,7 @@ Kubernetes 版本、CPU 架构和运行环境尚未实测，不声明支持范�
 
 | 输入 | 位置 | 必填条件 / 默认行为 |
 | --- | --- | --- |
-| namespace | kustomization | 默认 open-webui，示例直接继承；改名时必须同步 REDIS_URL |
+| namespace | kustomization | 默认 open-webui，示例显式同名（overlay 本地生成的资源依赖它落位）；改名时必须同步 REDIS_URL |
 | Ingress host/class/TLS | kustomization patches | 部署必须指定实际域名和 class；TLS hosts 与 WEBUI_URL 一致 |
 | WEBUI_URL | ConfigMap | 部署必填，包含 scheme；base 是占位示例域 |
 | DATABASE_URL | Secret | 必填 PostgreSQL 连接串，包含凭据，不得进入 ConfigMap |

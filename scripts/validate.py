@@ -100,8 +100,14 @@ def check_public(objects):
         require(not private_hits(yaml.safe_dump(obj)), 'PRIVATE_ENVIRONMENT_VALUE')
         require(not CREDENTIAL.search(yaml.safe_dump(obj)), 'CREDENTIAL_SIGNATURE')
         values = secret_data(obj) if obj.get('kind') == 'Secret' else obj.get('data', {})
+        # TLS 证书例外（维护者口径）：证书文件允许随 overlay 提交在 configuration/secrets/
+        # 下，kubernetes.io/tls Secret 的 tls.crt/tls.key 不按占位符/凭据签名检查，仅要求非空。
+        tls_material = obj.get('type') == 'kubernetes.io/tls'
         for key, value in values.items():
             require(not private_hits(str(value)), 'PRIVATE_ENVIRONMENT_VALUE/' + key)
+            if tls_material and key in {'tls.crt', 'tls.key'}:
+                require(str(value).strip(), 'TLS_SECRET_EMPTY/' + key)
+                continue
             require(not CREDENTIAL.search(str(value)), 'CREDENTIAL_SIGNATURE/' + key)
             if obj.get('kind') == 'Secret':
                 require(placeholder(value), 'SECRET_NOT_PLACEHOLDER/' + key)
@@ -155,7 +161,13 @@ def check_openwebui(objects, deploy=False):
                 ('Ingress', 'open-webui'), ('Deployment', 'open-webui'),
                 ('Deployment', 'open-webui-redis')}
     actual = {(o['kind'], None if o['kind'] == 'Namespace' else o['metadata']['name']) for o in objects}
-    require(len(objects) == 9 and actual == expected, 'OPENWEBUI_RESOURCE_CONTRACT')
+    # TLS Secret 为可选第 10 个资源：存在时必须是合法 kubernetes.io/tls 证书材料。
+    tls_secret = next((o for o in objects if o.get('kind') == 'Secret' and o['metadata']['name'] == 'open-webui-tls'), None)
+    require(tls_secret is None or (tls_secret.get('type') == 'kubernetes.io/tls'
+            and {'tls.crt', 'tls.key'} <= set(tls_secret.get('data', {}))), 'TLS_SECRET_INVALID')
+    if tls_secret is not None:
+        expected |= {('Secret', 'open-webui-tls')}
+    require(len(objects) == len(expected) and actual == expected, 'OPENWEBUI_RESOURCE_CONTRACT')
     lookup = {(o['kind'], o['metadata']['name']): o for o in objects}
     namespace = next(o['metadata']['name'] for o in objects if o['kind'] == 'Namespace')
     require(all(o['metadata'].get('namespace') == namespace for o in objects if o['kind'] != 'Namespace'),

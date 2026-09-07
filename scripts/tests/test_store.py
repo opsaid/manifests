@@ -113,6 +113,37 @@ class StoreTests(unittest.TestCase):
         with self.assertRaisesRegex(validate.Invalid, 'TLS_HOST_MISMATCH'):
             validate.check_openwebui(objects)
 
+    def test_tls_secret_generator_optional(self):
+        overlay = self.overlay()
+        path = overlay / 'kustomization.yaml'
+        config = yaml.safe_load(path.read_text())
+        config['secretGenerator'].append({
+            'name': 'open-webui-tls',
+            'type': 'kubernetes.io/tls',
+            'files': ['tls.crt=configuration/secrets/tls/tls.crt',
+                      'tls.key=configuration/secrets/tls/tls.key'],
+            'options': {'disableNameSuffixHash': True},
+        })
+        path.write_text(yaml.safe_dump(config))
+        tls_dir = overlay / 'configuration/secrets/tls'
+        tls_dir.mkdir(parents=True)
+        (tls_dir / 'tls.crt').write_text('-----BEGIN CERTIFICATE-----\nZmFrZS1jZXJ0\n-----END CERTIFICATE-----\n')
+        (tls_dir / 'tls.key').write_text('-----BEGIN PRIVATE KEY-----\nZmFrZS1rZXk=\n-----END PRIVATE KEY-----\n')
+        _, objects = validate.build(overlay)
+        validate.check_objects(objects)
+        validate.check_public(objects)
+        validate.check_openwebui(objects)
+        self.assertEqual(len(objects), 10)
+        bad = deepcopy(objects)
+        tls = next(o for o in bad if o.get('kind') == 'Secret' and o['metadata']['name'] == 'open-webui-tls')
+        tls['type'] = 'Opaque'
+        with self.assertRaisesRegex(validate.Invalid, 'TLS_SECRET_INVALID'):
+            validate.check_openwebui(bad)
+        tls['type'] = 'kubernetes.io/tls'
+        tls['data'].pop('tls.key')
+        with self.assertRaisesRegex(validate.Invalid, 'TLS_SECRET_INVALID'):
+            validate.check_openwebui(bad)
+
     def test_encoded_private_value_and_unmarked_secret(self):
         for value, rule in [('postgresql://app:CHANGE_ME@' + '192.168.' + '1.2/db', 'PRIVATE_ENVIRONMENT_VALUE'),
                             ('unit-test-credential', 'SECRET_NOT_PLACEHOLDER')]:
