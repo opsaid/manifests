@@ -17,10 +17,10 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 SENSITIVE = {'DATABASE_URL', 'WEBUI_SECRET_KEY', 'OPENAI_API_KEY',
              'OAUTH_CLIENT_SECRET', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY'}
-# 通用模式入代码；组织专属私有值（内部域名、registry namespace 等）不入 git，
-# 由维护者在 scripts/private-patterns.local 维护（每行一个正则，# 为注释），参见 private-patterns.example。
-PRIVATE = re.compile(r'\b(?:192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)\b|'
-                     r'registry\.cn-[\w-]+\.aliyuncs\.com/opsaid|ccr\.ccs\.tencentyun\.com/opsaid', re.I)
+# 通用模式入代码（内网地址等）；组织公共镜像仓库、namespace 等公开标识不算私有值。
+# 组织专属私有值（内部域名、主机地址等）不入 git，由维护者在 scripts/private-patterns.local
+# 维护（每行一个正则，# 为注释），参见 private-patterns.example。
+PRIVATE = re.compile(r'\b(?:192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)\b', re.I)
 ORG_PATTERNS_FILE = Path(__file__).parent / 'private-patterns.local'
 CREDENTIAL = re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bAKIA[A-Z0-9]{16}\b|\bghp_[A-Za-z0-9]{30,}\b|\bsk-[A-Za-z0-9_-]{24,}\b')
 

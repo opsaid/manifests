@@ -51,7 +51,7 @@ Kubernetes 版本、CPU 架构和运行环境尚未实测，不声明支持范�
 
 | 输入 | 位置 | 必填条件 / 默认行为 |
 | --- | --- | --- |
-| namespace | kustomization | 默认 open-webui；示例改为 open-webui-example，必须同步 REDIS_URL |
+| namespace | kustomization | 默认 open-webui（示例同名）；改名时必须同步 REDIS_URL |
 | Ingress host/class/TLS | kustomization patches | 部署必须指定实际域名和 class；TLS hosts 与 WEBUI_URL 一致 |
 | WEBUI_URL | ConfigMap | 部署必填，包含 scheme；base 是占位示例域 |
 | DATABASE_URL | Secret | 必填 PostgreSQL 连接串，包含凭据，不得进入 ConfigMap |
@@ -86,7 +86,8 @@ OIDC 注册条件与会话密钥依据 [上游 config.py](https://github.com/ope
 2. 将 resources 的本地路径替换为实际公共仓库固定 tag/SHA 的引用。格式：
    `https://github.com/opsaid/manifests.git//addons/open-webui?ref=<已发布tag或完整SHA>`。
    当前尚无商店发布版本；不能照抄不存在的 tag。
-3. 修改 namespace、域名、Ingress class/TLS、非凭据配置；删除示例镜像覆盖或改成已同步的真实镜像仓库。
+3. 按需修改 namespace、域名、Ingress class/TLS、非凭据配置；示例镜像仓库为组织公共仓库
+   （registry.cn-hangzhou.aliyuncs.com/opsaid），确认已同步所需版本后可直接保留。
 4. 由秘密存储在 Git 工作区外生成权限为 `0600` 的 dotenv 文件，包含表中的必填 Secret 键，
    OIDC 启用时再加 OAUTH_CLIENT_SECRET。不要把秘密通过命令行参数传递，不要启用 shell tracing。
 5. 在具有固定 Kustomize、Git 和 PyYAML 的受控执行环境运行下面的构建及部署步骤。
@@ -149,7 +150,7 @@ python3 -m unittest discover -s scripts/tests -v
 scripts/validate.sh --audit-public
 ```
 
-前两项验证构建与试点合同。最后一项扫描整个工作区：通用模式（内网地址、公共云 registry 等）内置于
+前两项验证构建与试点合同。最后一项扫描整个工作区：通用模式（内网地址等）内置于
 脚本，组织专属模式由不入库的 `scripts/private-patterns.local` 提供（从 `private-patterns.example`
 复制填写），缺失时该部分检查不生效。结果仅输出文件/行/规则，不输出值。它没有扫描 Git 历史，
 也不是完整凭据识别器，公开前还需要人工审查与全历史扫描。

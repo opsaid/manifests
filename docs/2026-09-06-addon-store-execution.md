@@ -119,6 +119,11 @@ Ingress/open-webui/spec/rules/0/host
   命令同步文件名并修正失效路径。渲染仍为 4 个资源。
 - `private-patterns.local` 补充内网子域、旧环境命名与身份标签值的模式防止回归（仅本地生效，
   不入库）。
+- 维护者明确公开口径：组织公共镜像仓库（registry.cn-hangzhou.aliyuncs.com/opsaid）与应用
+  namespace（open-webui）属公开标识，可出现在公共内容中；私密配置与主机 IP 仍是禁入项。
+  据此 open-webui 公共示例改用真实 registry 与真实 namespace（仅换 newName 继承 base tag，
+  REDIS_URL 随 namespace 与 base 一致回归继承），校验器移除内置的公共云 registry 私有模式
+  （RFC1918 内网地址模式保留），规范、接入说明、示例 README、patterns 注释与合同测试同步。
 - argo-cd kustomization 移除无引用的 dex 与 ECR redis 镜像条目，前后渲染哈希一致。
 - 移除被追踪的 .DS_Store 并补 .gitignore；CI 新增 `--audit-public` 步骤（不含组织专属模式
   与 Git 历史）；修正根 README、应用接入说明与公共规范中停留在净化完成前的过时表述。

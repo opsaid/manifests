@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: open-webui-example
+namespace: open-webui
 
 # 公开示例测试当前代码；复制到私有仓库后改为公共 Git URL + 固定发布 tag/SHA。
 resources:
@@ -24,11 +24,11 @@ secretGenerator:
     disableNameSuffixHash: true
 
 images:
-# 虚构镜像仓库仅用于演示；真实环境删除此覆盖或换成已同步相同版本的仓库。
+# 组织公共镜像仓库（公开标识，不属于私密值）；仅换 newName 时继承 base 固定 tag。
 - name: ghcr.io/open-webui/open-webui
-  newName: registry.example.com/mirror/open-webui
+  newName: registry.cn-hangzhou.aliyuncs.com/opsaid/open-webui
 - name: redis
-  newName: registry.example.com/mirror/redis
+  newName: registry.cn-hangzhou.aliyuncs.com/opsaid/redis
 
 patches:
 - target:
@@ -50,6 +50,9 @@ patches:
         - open-webui.apps.example.com
         secretName: open-webui-tls
 # 按容器名合并，不依赖 containers 数组中的顺序。
+# resources 内逐键合并：写全 requests/limits 则全量生效（主容器示例），
+# 只写部分键时未写的键继承 base（下方 redis 只覆盖 requests，limits 继承 base 值）；
+# 删除某键需显式 remove，不能用空字符串代替。
 - target:
     group: apps
     version: v1
@@ -72,3 +75,25 @@ patches:
               requests:
                 cpu: "1"
                 memory: 2Gi
+              limits:
+                cpu: "2"
+                memory: 4Gi
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: open-webui-redis
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: open-webui-redis
+    spec:
+      template:
+        spec:
+          containers:
+          - name: open-webui-redis
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi

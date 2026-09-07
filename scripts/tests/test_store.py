@@ -76,7 +76,7 @@ class StoreTests(unittest.TestCase):
         for name in ('open-webui', 'open-webui-redis'):
             base_image = self.obj(self.base_objects, 'Deployment', name)['spec']['template']['spec']['containers'][0]['image']
             overlay_image = self.obj(self.example_objects, 'Deployment', name)['spec']['template']['spec']['containers'][0]['image']
-            self.assertTrue(overlay_image.startswith('registry.example.com/'))
+            self.assertTrue(overlay_image.startswith('registry.cn-hangzhou.aliyuncs.com/opsaid/'))
             self.assertEqual(base_image.rsplit(':', 1)[1], overlay_image.rsplit(':', 1)[1])
         pod = self.obj(self.example_objects, 'Deployment')['spec']['template']['spec']
         resources = pod['containers'][0]['resources']
@@ -98,6 +98,11 @@ class StoreTests(unittest.TestCase):
 
     def test_namespace_string_requires_override(self):
         objects = deepcopy(self.example_objects)
+        for obj in objects:
+            if obj['kind'] == 'Namespace':
+                obj['metadata']['name'] = 'renamed-ns'
+            else:
+                obj['metadata']['namespace'] = 'renamed-ns'
         self.obj(objects, 'ConfigMap')['data']['REDIS_URL'] = self.obj(self.base_objects, 'ConfigMap')['data']['REDIS_URL']
         with self.assertRaisesRegex(validate.Invalid, 'REDIS_NAMESPACE_MISMATCH'):
             validate.check_openwebui(objects)

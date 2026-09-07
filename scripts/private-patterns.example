@@ -1,6 +1,7 @@
 # 组织专属私有值模式：每行一个 Python 正则（不区分大小写），# 开头为注释。
 # 复制本文件为同目录 private-patterns.local 并填入真实模式；.local 已被 gitignore，
-# 不得提交。公共仓库只保留通用模式（内网地址、公共云 registry 等，见 validate.py），
+# 不得提交。公共仓库只保留通用模式（内网地址等，见 validate.py）；组织公共镜像仓库、
+# namespace 等公开标识不算私有值，不要写进 .local。
 # .local 缺失时组织专属检查不生效。以下示例均为占位，不会匹配真实环境：
-# internal-registry-namespace
+# internal-only-[\w-]+\.corp
 # (?:org-a|org-b)\.internal\.example
