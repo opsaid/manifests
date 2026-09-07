@@ -108,8 +108,12 @@ Ingress/open-webui/spec/rules/0/host
 
 - 删除 `addons/argo-workflows/install.yaml`：该文件未被任何 kustomization 引用（死文件），
   且残留真实内网 S3 端点与桶名——该值不在已知模式黑名单内，此前 `--audit-public` 的 0 发现
-  未覆盖它（manual_review=REQUIRED 的真实案例）。删除后渲染资源数不变；若历史中的该端点视为
-  需清除的标识，需再执行一轮历史改写并强推（本地备份 bundle 可作依据）。
+  未覆盖它（manual_review=REQUIRED 的真实案例）。删除后渲染资源数不变。
+- 第三轮历史改写（同日）：经 git-filter-repo replace-text 将历史中该内网端点替换为保留域
+  占位（维护者本轮仅授权该端点，旧内部命名按决定保留在历史中），origin 重建并强推 main。
+  全历史复扫该端点零残留；六个入口构建、合同测试与公开审计结果不变。改写前备份
+  bundle 位于本机 /tmp/manifests-pre-rewrite-20260907.bundle，与 20260906 备份一并待
+  确认公开状态后删除；其余机器上的旧克隆需重新克隆，不能继续在被改写历史上开发。
 - 模板占位值中性化：namespace 与应用名统一为 `appname` / `demo-v1`，移除部署身份 UUID 标签
   （与 open-webui 中性化口径一致），修正示例 env 拼写并补齐空示例配置；argo-cd README 制作
   命令同步文件名并修正失效路径。渲染仍为 4 个资源。
