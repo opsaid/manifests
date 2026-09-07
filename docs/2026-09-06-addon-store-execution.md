@@ -124,6 +124,10 @@ Ingress/open-webui/spec/rules/0/host
   据此 open-webui 公共示例改用真实 registry 与真实 namespace（仅换 newName 继承 base tag，
   REDIS_URL 随 namespace 与 base 一致回归继承），校验器移除内置的公共云 registry 私有模式
   （RFC1918 内网地址模式保留），规范、接入说明、示例 README、patterns 注释与合同测试同步。
+- 示例 overlay 精简（渲染等价性逐项验证）：删除与 base 重复的 namespace、镜像 newTag 与
+  generator options（merge 时继承 base）；按维护者决定移除资源 patch 中的
+  `opsaid.net/config-revision` 注解，配置变更传播依赖部署流程既有的 rollout restart，
+  不再要求人工维护修订标识。
 - argo-cd kustomization 移除无引用的 dex 与 ECR redis 镜像条目，前后渲染哈希一致。
 - 移除被追踪的 .DS_Store 并补 .gitignore；CI 新增 `--audit-public` 步骤（不含组织专属模式
   与 Git 历史）；修正根 README、应用接入说明与公共规范中停留在净化完成前的过时表述。

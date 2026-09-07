@@ -51,7 +51,7 @@ Kubernetes 版本、CPU 架构和运行环境尚未实测，不声明支持范�
 
 | 输入 | 位置 | 必填条件 / 默认行为 |
 | --- | --- | --- |
-| namespace | kustomization | 默认 open-webui（示例同名）；改名时必须同步 REDIS_URL |
+| namespace | kustomization | 默认 open-webui，示例直接继承；改名时必须同步 REDIS_URL |
 | Ingress host/class/TLS | kustomization patches | 部署必须指定实际域名和 class；TLS hosts 与 WEBUI_URL 一致 |
 | WEBUI_URL | ConfigMap | 部署必填，包含 scheme；base 是占位示例域 |
 | DATABASE_URL | Secret | 必填 PostgreSQL 连接串，包含凭据，不得进入 ConfigMap |

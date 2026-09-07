@@ -1,9 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: open-webui
-
 # 公开示例测试当前代码；复制到私有仓库后改为公共 Git URL + 固定发布 tag/SHA。
+# namespace 与镜像 tag 均继承 base，generator options（稳定名）也随 merge 继承；只写差异。
 resources:
 - ../../../addons/open-webui
 
@@ -12,19 +11,15 @@ configMapGenerator:
   behavior: merge
   envs:
   - configuration/configmaps/open-webui.env
-  options:
-    disableNameSuffixHash: true
 
 secretGenerator:
 - name: open-webui
   behavior: merge
   envs:
   - configuration/secrets/open-webui.env
-  options:
-    disableNameSuffixHash: true
 
 images:
-# 组织公共镜像仓库（公开标识，不属于私密值）；仅换 newName 时继承 base 固定 tag。
+# 组织公共镜像仓库（公开标识，不属于私密值）；仅写 newName，tag 继承 base 固定版本。
 - name: ghcr.io/open-webui/open-webui
   newName: registry.cn-hangzhou.aliyuncs.com/opsaid/open-webui
 - name: redis
@@ -49,10 +44,8 @@ patches:
       - hosts:
         - open-webui.apps.example.com
         secretName: open-webui-tls
-# 按容器名合并，不依赖 containers 数组中的顺序。
-# resources 内逐键合并：写全 requests/limits 则全量生效（主容器示例），
-# 只写部分键时未写的键继承 base（下方 redis 只覆盖 requests，limits 继承 base 值）；
-# 删除某键需显式 remove，不能用空字符串代替。
+# 资源 patch 按容器名合并，不依赖 containers 数组顺序；requests/limits 内逐键合并：
+# 主容器写全 requests/limits 全量生效；redis 只写 requests，limits 继承 base 值。
 - target:
     group: apps
     version: v1
@@ -65,9 +58,6 @@ patches:
       name: open-webui
     spec:
       template:
-        metadata:
-          annotations:
-            opsaid.net/config-revision: "example-1"
         spec:
           containers:
           - name: open-webui

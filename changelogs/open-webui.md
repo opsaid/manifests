@@ -12,6 +12,8 @@
 - 提供完整 overlay、私有构建工具、结构校验和 CI；稳定 generator 名仍要求显式滚动更新。
 - 明确公开口径：组织公共镜像仓库（registry.cn-hangzhou.aliyuncs.com/opsaid）与 namespace
   属公开标识，公共示例直接使用真实值；私密配置与主机 IP 仍禁止出现在公共内容中。
+- 示例 overlay 精简：namespace、镜像 tag 与 generator options 均继承 base（渲染等价）；
+  不使用配置修订注解，配置变更沿用部署流程中的 rollout restart。
 
 当前没有商店发布 tag。切换旧部署入口前必须先准备私有 overlay，并完成依赖、配置、权限、
 数据备份和运行验证。未声明支持数据库降级或直接回退数据迁移。
