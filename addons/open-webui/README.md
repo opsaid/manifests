@@ -28,13 +28,13 @@ addons/open-webui/
 │   └── secrets/open-webui.env             # 敏感环境变量（API Key、S3 密钥）
 ├── network/
 │   ├── ingresses/open-webui.yaml          # Ingress
-│   └── services/open-webui.yaml           # open-webui / open-webui-redis Service
+│   └── services/open-webui.yaml           # open-webui / redis Service
 ├── security/
 │   └── serviceaccounts/open-webui-sa.yaml # ServiceAccount
 └── workloads/
     └── deployments/
         ├── open-webui.yaml                # 主服务
-        └── open-webui-redis.yaml          # websocket manager 依赖的 Redis
+        └── redis.yaml                # websocket manager 依赖的 Redis
 ```
 
 ## 相关特性
@@ -73,7 +73,7 @@ chart 的 `copy-app-data` initContainer 用于从镜像内播种默认数据；�
 
 ### websocket 支持
 
-`websocket.manager: redis`，配套部署 `open-webui-redis`（Deployment + Service），
+`websocket.manager: redis`，配套部署 `redis`（Deployment + Service），
 连接地址通过 `REDIS_URL` 注入（`WEBSOCKET_REDIS_URL` 默认沿用 `REDIS_URL`，无需单独设置）。
 
 ### 外部 Postgres 与 pgvector
@@ -137,7 +137,7 @@ base 清单不启用 TLS；需要时取消 kustomization `patches` 中预留的 
 | 项 | compose | 本清单 | 说明 |
 | --- | --- | --- | --- |
 | 端口 | `PORT=3000` | 镜像默认 8080 | Service/Ingress 已按 8080 适配 |
-| redis | 外部自建 redis（带密码） | 集群内 `open-webui-redis` | 改接外部 redis 时将 `REDIS_URL` 移入 secrets |
+| redis | 外部自建 redis（带密码） | 集群内 `redis` | 改接外部 redis 时将 `REDIS_URL` 移入 secrets |
 | nofile 65535 | ulimits | 未设置 | k8s 无直接等价（需特权 initContainer），暂不设置 |
 | CA 证书挂载 | `/etc/ssl/certs/ca-certificates.crt` | 未挂载 | `REQUESTS_VERIFY=False` 下非必需；需严格校验时以 ConfigMap 挂载 |
 | 资源 | 无限制 | limits 2C / 4Gi | `UVICORN_WORKERS=4` 对应提升 |

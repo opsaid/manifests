@@ -32,7 +32,7 @@ resources:
 - security/serviceaccounts/open-webui-sa.yaml
 - network/services/open-webui.yaml
 - network/ingresses/open-webui.yaml
-- workloads/deployments/open-webui-redis.yaml
+- workloads/deployments/redis.yaml
 - workloads/deployments/open-webui.yaml
 
 patches:

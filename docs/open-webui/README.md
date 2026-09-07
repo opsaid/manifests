@@ -120,7 +120,7 @@ Python 3.9+，`python3 -m pip install -r scripts/requirements.txt`。
   # 稳定 generator 名下，单独更改 env 不会自动滚动 Pod。
   kubectl --context "$TARGET_CONTEXT" -n "$TARGET_NAMESPACE" rollout restart deployment/open-webui
   kubectl --context "$TARGET_CONTEXT" -n "$TARGET_NAMESPACE" rollout status deployment/open-webui --timeout=300s
-  kubectl --context "$TARGET_CONTEXT" -n "$TARGET_NAMESPACE" rollout status deployment/open-webui-redis --timeout=300s
+  kubectl --context "$TARGET_CONTEXT" -n "$TARGET_NAMESPACE" rollout status deployment/redis --timeout=300s
 )
 ```
 

@@ -21,12 +21,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: open-webui-redis
+  name: redis
   namespace: open-webui
   labels:
     app.kubernetes.io/name: open-webui
     app.kubernetes.io/instance: open-webui
-    app.kubernetes.io/component: open-webui-redis
+    app.kubernetes.io/component: redis
 spec:
   ports:
   - name: http
@@ -34,4 +34,4 @@ spec:
     targetPort: http
   selector:
     app.kubernetes.io/instance: open-webui
-    app.kubernetes.io/component: open-webui-redis
+    app.kubernetes.io/component: redis

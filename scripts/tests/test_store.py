@@ -73,7 +73,7 @@ class StoreTests(unittest.TestCase):
         secret = validate.secret_data(self.obj(self.example_objects, 'Secret'))
         self.assertIn('postgres.example.com', secret['DATABASE_URL'])
         self.assertIn('OAUTH_CLIENT_SECRET', secret)
-        for name in ('open-webui', 'open-webui-redis'):
+        for name in ('open-webui', 'redis'):
             base_image = self.obj(self.base_objects, 'Deployment', name)['spec']['template']['spec']['containers'][0]['image']
             overlay_image = self.obj(self.example_objects, 'Deployment', name)['spec']['template']['spec']['containers'][0]['image']
             self.assertTrue(overlay_image.startswith('registry.cn-hangzhou.aliyuncs.com/opsaid/'))

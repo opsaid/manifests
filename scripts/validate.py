@@ -157,9 +157,9 @@ def check_refs(path, allow_local=False, visited=None):
 def check_openwebui(objects, deploy=False):
     expected = {('Namespace', None), ('ServiceAccount', 'open-webui-sa'),
                 ('ConfigMap', 'open-webui'), ('Secret', 'open-webui'),
-                ('Service', 'open-webui'), ('Service', 'open-webui-redis'),
+                ('Service', 'open-webui'), ('Service', 'redis'),
                 ('Ingress', 'open-webui'), ('Deployment', 'open-webui'),
-                ('Deployment', 'open-webui-redis')}
+                ('Deployment', 'redis')}
     actual = {(o['kind'], None if o['kind'] == 'Namespace' else o['metadata']['name']) for o in objects}
     # TLS Secret 为可选第 10 个资源：存在时必须是合法 kubernetes.io/tls 证书材料。
     tls_secret = next((o for o in objects if o.get('kind') == 'Secret' and o['metadata']['name'] == 'open-webui-tls'), None)
@@ -187,12 +187,12 @@ def check_openwebui(objects, deploy=False):
     backend = ingress['rules'][0]['http']['paths'][0]['backend']['service']
     require(backend['name'] == 'open-webui' and backend['port'].get('name') == 'http', 'INGRESS_BACKEND_MISMATCH')
     redis_host = urlsplit(config.get('REDIS_URL', '')).hostname
-    require(redis_host in {'open-webui-redis', f'open-webui-redis.{namespace}.svc.cluster.local'},
+    require(redis_host in {'redis', f'redis.{namespace}.svc.cluster.local'},
             'REDIS_NAMESPACE_MISMATCH')
     if config.get('WEBUI_URL', '').startswith('https://'):
         require(any(host in t.get('hosts', []) and t.get('secretName') for t in ingress.get('tls', [])),
                 'TLS_HOST_MISMATCH')
-    for name in ('open-webui', 'open-webui-redis'):
+    for name in ('open-webui', 'redis'):
         service = lookup[('Service', name)]['spec']
         template = lookup[('Deployment', name)]['spec']['template']
         require(all(template['metadata']['labels'].get(k) == v for k, v in service['selector'].items()),
