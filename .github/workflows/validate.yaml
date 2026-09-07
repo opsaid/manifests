@@ -31,8 +31,8 @@ jobs:
         mkdir -p "$RUNNER_TEMP/addon-bin"
         tar -xzf "$directory/$asset" -C "$RUNNER_TEMP/addon-bin" kustomize
         echo "$RUNNER_TEMP/addon-bin" >> "$GITHUB_PATH"
-    - name: Build and check pilot contract
-      run: scripts/validate.sh --app open-webui
+    - name: Check repository structure, docs, builds and registered contracts
+      run: scripts/validate.sh
     - name: Contract regression tests
       run: python -m unittest discover -s scripts/tests -v
     - name: Public source audit

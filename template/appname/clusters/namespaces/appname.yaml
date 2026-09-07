@@ -1,32 +1,4 @@
----
 apiVersion: v1
 kind: Namespace
 metadata:
   name: appname
-
----
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: limit-range
-  namespace: appname
-spec:
-  limits:
-  - default:
-      cpu: 1
-      memory: 1Gi
-    defaultRequest:
-      cpu: 200m
-      memory: 256Mi
-    type: Container
-
----
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: memory-quota
-  namespace: appname
-spec:
-  hard:
-    requests.memory: 10Gi
-    limits.memory: 10Gi

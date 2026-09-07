@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Repository builds, open-webui contract, and separate public-source audit.
+"""Repository structure/builds, registered application contracts, and public-source audit.
 
 Never print rendered values, secret values or raw tool/parser error messages.
 """
 import argparse
-import base64
-import binascii
 from pathlib import Path
 import re
 import subprocess
@@ -13,6 +11,18 @@ import sys
 from urllib.parse import parse_qs, urlsplit
 
 import yaml
+
+from checks.common import Invalid, require, documents, read_yaml, secret_data, placeholder, example_value
+from checks.open_webui import check as check_openwebui
+from checks.repository import APP_ID, check_catalog, check_layout, check_docs
+
+CONTRACTS = {'open-webui': check_openwebui}
+
+
+def check_contract(app, objects, deploy=False):
+    require(app in CONTRACTS, 'APP_CONTRACT_MISSING')
+    CONTRACTS[app](objects, deploy=deploy)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SENSITIVE = {'DATABASE_URL', 'WEBUI_SECRET_KEY', 'OPENAI_API_KEY',
@@ -23,15 +33,6 @@ SENSITIVE = {'DATABASE_URL', 'WEBUI_SECRET_KEY', 'OPENAI_API_KEY',
 PRIVATE = re.compile(r'\b(?:192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)\b', re.I)
 ORG_PATTERNS_FILE = Path(__file__).parent / 'private-patterns.local'
 CREDENTIAL = re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bAKIA[A-Z0-9]{16}\b|\bghp_[A-Za-z0-9]{30,}\b|\bsk-[A-Za-z0-9_-]{24,}\b')
-
-
-class Invalid(Exception):
-    pass
-
-
-def require(condition, rule):
-    if not condition:
-        raise Invalid(rule)
 
 
 def private_patterns():
@@ -47,19 +48,6 @@ def private_hits(text):
     return bool(PRIVATE.search(text)) or any(pattern.search(text) for pattern in private_patterns())
 
 
-def documents(text):
-    try:
-        result = [o for o in yaml.safe_load_all(text) if o is not None]
-    except yaml.YAMLError:
-        raise Invalid('YAML_PARSE_FAILED') from None
-    require(all(isinstance(o, dict) for o in result), 'YAML_OBJECT_REQUIRED')
-    return result
-
-
-def read_yaml(path):
-    return documents(path.read_text())
-
-
 def build(path):
     result = subprocess.run(['kustomize', 'build', str(path)], capture_output=True, text=True)
     if result.returncode:
@@ -72,27 +60,6 @@ def build(path):
             ('git', 'REMOTE_FETCH_FAILED')] if token in detail), 'RENDER_FAILED')
         raise Invalid('BUILD_FAILED/' + category)
     return result.stdout, documents(result.stdout)
-
-
-def secret_data(obj):
-    values = {}
-    try:
-        for key, value in obj.get('data', {}).items():
-            require(isinstance(value, str), 'SECRET_ENCODING_INVALID')
-            values[key] = base64.b64decode(value.replace('\n', '').replace('\r', ''), validate=True).decode('utf-8')
-    except (ValueError, TypeError, UnicodeError, binascii.Error):
-        raise Invalid('SECRET_ENCODING_INVALID') from None
-    values.update(obj.get('stringData', {}))
-    return values
-
-
-def placeholder(value):
-    value = str(value)
-    return not value.strip() or 'CHANGE_ME' in value or bool(re.search(r'<[^>]+>', value))
-
-
-def example_value(value):
-    return bool(re.search(r'(?<![\w-])(?:[\w.-]+\.)?example\.(?:com|net|org)(?=[:/\s]|$)', str(value)))
 
 
 def check_public(objects):
@@ -115,6 +82,33 @@ def check_public(objects):
                 raise Invalid('SENSITIVE_KEY_IN_CONFIGMAP/' + key)
 
 
+def check_selector(selector, labels):
+    require(isinstance(selector, dict) and bool(selector), 'WORKLOAD_SELECTOR_MISSING')
+    require(isinstance(labels, dict), 'POD_LABELS_INVALID')
+    matches = selector.get('matchLabels', {})
+    expressions = selector.get('matchExpressions', [])
+    require(isinstance(matches, dict) and isinstance(expressions, list)
+            and bool(matches or expressions), 'WORKLOAD_SELECTOR_INVALID')
+    require(all(labels.get(k) == v for k, v in matches.items()), 'WORKLOAD_SELECTOR_MISMATCH')
+    for expression in expressions:
+        require(isinstance(expression, dict), 'WORKLOAD_SELECTOR_INVALID')
+        key, operator = expression.get('key'), expression.get('operator')
+        values = expression.get('values', [])
+        require(isinstance(key, str) and key and isinstance(values, list)
+                and all(isinstance(v, str) for v in values), 'WORKLOAD_SELECTOR_INVALID')
+        if operator in {'In', 'NotIn'}:
+            require(bool(values), 'WORKLOAD_SELECTOR_INVALID')
+            matched = key in labels and labels[key] in values
+            if operator == 'NotIn':
+                matched = not matched
+        elif operator in {'Exists', 'DoesNotExist'}:
+            require(not values, 'WORKLOAD_SELECTOR_INVALID')
+            matched = key in labels if operator == 'Exists' else key not in labels
+        else:
+            raise Invalid('WORKLOAD_SELECTOR_INVALID')
+        require(matched, 'WORKLOAD_SELECTOR_MISMATCH')
+
+
 def check_objects(objects):
     identities = set()
     for obj in objects:
@@ -125,6 +119,8 @@ def check_objects(objects):
         require(identity not in identities, 'DUPLICATE_RESOURCE')
         identities.add(identity)
         if obj.get('kind') in {'Deployment', 'StatefulSet', 'DaemonSet'}:
+            check_selector(obj['spec'].get('selector'),
+                           obj['spec']['template'].get('metadata', {}).get('labels', {}))
             pod = obj['spec']['template']['spec']
             for container in pod.get('containers', []) + pod.get('initContainers', []):
                 image = container.get('image', '')
@@ -152,86 +148,6 @@ def check_refs(path, allow_local=False, visited=None):
             if target.is_dir():
                 require(allow_local, 'LOCAL_BASE_NOT_ALLOWED_FOR_DEPLOY')
                 check_refs(target, allow_local, visited)
-
-
-def check_openwebui(objects, deploy=False):
-    expected = {('Namespace', None), ('ServiceAccount', 'open-webui-sa'),
-                ('ConfigMap', 'open-webui'), ('Secret', 'open-webui'),
-                ('Service', 'open-webui'), ('Service', 'redis'),
-                ('Ingress', 'open-webui'), ('Deployment', 'open-webui'),
-                ('Deployment', 'redis')}
-    actual = {(o['kind'], None if o['kind'] == 'Namespace' else o['metadata']['name']) for o in objects}
-    # TLS Secret 为可选第 10 个资源：存在时必须是合法 kubernetes.io/tls 证书材料。
-    tls_secret = next((o for o in objects if o.get('kind') == 'Secret' and o['metadata']['name'] == 'open-webui-tls'), None)
-    require(tls_secret is None or (tls_secret.get('type') == 'kubernetes.io/tls'
-            and {'tls.crt', 'tls.key'} <= set(tls_secret.get('data', {}))), 'TLS_SECRET_INVALID')
-    if tls_secret is not None:
-        expected |= {('Secret', 'open-webui-tls')}
-    require(len(objects) == len(expected) and actual == expected, 'OPENWEBUI_RESOURCE_CONTRACT')
-    lookup = {(o['kind'], o['metadata']['name']): o for o in objects}
-    namespace = next(o['metadata']['name'] for o in objects if o['kind'] == 'Namespace')
-    require(all(o['metadata'].get('namespace') == namespace for o in objects if o['kind'] != 'Namespace'),
-            'NAMESPACE_MISMATCH')
-    config = lookup[('ConfigMap', 'open-webui')]['data']
-    secrets = secret_data(lookup[('Secret', 'open-webui')])
-    require(not (set(config) & set(secrets)), 'DUPLICATE_ENV_SOURCES')
-    pod = lookup[('Deployment', 'open-webui')]['spec']['template']['spec']
-    container = next((c for c in pod['containers'] if c['name'] == 'open-webui'), None)
-    require(container is not None, 'APP_CONTAINER_MISSING')
-    require(container.get('envFrom') == [{'configMapRef': {'name': 'open-webui'}},
-                                         {'secretRef': {'name': 'open-webui'}}], 'ENV_REFERENCE_MISMATCH')
-    require(pod.get('serviceAccountName') == 'open-webui-sa', 'SERVICEACCOUNT_REFERENCE_MISMATCH')
-    ingress = lookup[('Ingress', 'open-webui')]['spec']
-    host = ingress['rules'][0]['host']
-    require(urlsplit(config.get('WEBUI_URL', '')).hostname == host, 'WEBUI_HOST_MISMATCH')
-    backend = ingress['rules'][0]['http']['paths'][0]['backend']['service']
-    require(backend['name'] == 'open-webui' and backend['port'].get('name') == 'http', 'INGRESS_BACKEND_MISMATCH')
-    redis_host = urlsplit(config.get('REDIS_URL', '')).hostname
-    require(redis_host in {'redis', f'redis.{namespace}.svc.cluster.local'},
-            'REDIS_NAMESPACE_MISMATCH')
-    if config.get('WEBUI_URL', '').startswith('https://'):
-        require(any(host in t.get('hosts', []) and t.get('secretName') for t in ingress.get('tls', [])),
-                'TLS_HOST_MISMATCH')
-    for name in ('open-webui', 'redis'):
-        service = lookup[('Service', name)]['spec']
-        template = lookup[('Deployment', name)]['spec']['template']
-        require(all(template['metadata']['labels'].get(k) == v for k, v in service['selector'].items()),
-                'SERVICE_SELECTOR_MISMATCH')
-    if not deploy:
-        return
-    values = {**config, **secrets}
-
-    def required(key):
-        require(key in values and not placeholder(values[key]) and not example_value(values[key]),
-                'DEPLOY_REQUIRED/' + key)
-
-    for key in ('WEBUI_URL', 'DATABASE_URL', 'WEBUI_SECRET_KEY', 'OPENAI_API_BASE_URL', 'OPENAI_API_KEY'):
-        required(key)
-    require(len(secrets['WEBUI_SECRET_KEY']) >= 32, 'WEBUI_SECRET_KEY_TOO_SHORT')
-    require(ingress.get('ingressClassName'), 'INGRESS_CLASS_REQUIRED')
-    for obj in objects:
-        if obj['kind'] == 'Deployment':
-            for c in obj['spec']['template']['spec']['containers']:
-                require(not example_value(c['image']), 'EXAMPLE_IMAGE_FOR_DEPLOY')
-    database = urlsplit(secrets['DATABASE_URL'])
-    require(database.scheme in {'postgresql', 'postgres'} and database.hostname and database.username
-            and database.password, 'DATABASE_URL_INVALID')
-    require(config.get('STORAGE_PROVIDER') == 's3', 'UNSUPPORTED_STORAGE_PROFILE')
-    for key in ('S3_BUCKET_NAME', 'S3_REGION_NAME', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY'):
-        required(key)
-    if 'S3_ENDPOINT_URL' in config:
-        required('S3_ENDPOINT_URL')
-    if config.get('OAUTH_CLIENT_ID') or config.get('OPENID_PROVIDER_URL'):
-        for key in ('OAUTH_CLIENT_ID', 'OPENID_PROVIDER_URL', 'OPENID_REDIRECT_URI', 'OAUTH_CLIENT_SECRET'):
-            required(key)
-        require(config['OPENID_REDIRECT_URI'] == config['WEBUI_URL'].rstrip('/') + '/oauth/oidc/callback',
-                'OIDC_CALLBACK_MISMATCH')
-    for toggle, endpoint in [('ENABLE_OTEL', 'OTEL_EXPORTER_OTLP_ENDPOINT'),
-                             ('ENABLE_OTEL_TRACES', 'OTEL_EXPORTER_OTLP_ENDPOINT'),
-                             ('ENABLE_OTEL_METRICS', 'OTEL_METRICS_EXPORTER_OTLP_ENDPOINT'),
-                             ('ENABLE_OTEL_LOGS', 'OTEL_LOGS_EXPORTER_OTLP_ENDPOINT')]:
-        if str(config.get(toggle, '')).lower() == 'true':
-            required(endpoint)
 
 
 def source_issues(path):
@@ -272,11 +188,17 @@ def audit(root):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--app', choices=['open-webui'])
-    parser.add_argument('--deploy', type=Path, help='Validate configured open-webui overlay, without applying')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--app', help='Check one addon and its example; requires an application contract')
+    parser.add_argument('--build-only', action='store_true', help='With --app: structure/build checks without an application contract')
+    mode.add_argument('--deploy', type=Path, help='Validate configured open-webui overlay, without applying')
     parser.add_argument('--local-test', action='store_true', help='Allow local base for non-release tests only')
-    parser.add_argument('--audit-public', action='store_true', help='Whole working-tree publication gate, not history')
+    mode.add_argument('--audit-public', action='store_true', help='Whole working-tree publication gate, not history')
     args = parser.parse_args()
+    if args.build_only and not args.app:
+        parser.error('--build-only requires --app')
+    if args.local_test and not args.deploy:
+        parser.error('--local-test requires --deploy')
     try:
         version = subprocess.run(['kustomize', 'version'], check=True, capture_output=True, text=True).stdout.strip()
         require(version == (ROOT / 'scripts/kustomize-version.txt').read_text().strip(), 'KUSTOMIZE_VERSION_MISMATCH')
@@ -287,37 +209,43 @@ def main():
             check_refs(args.deploy, args.local_test)
             _, objects = build(args.deploy)
             check_objects(objects)
-            check_openwebui(objects, deploy=True)
+            check_contract('open-webui', objects, deploy=True)
             print('DEPLOY_INPUT_OK', 'resources=' + str(len(objects)), 'runtime=NOT_CHECKED')
             return 0
-        catalog = read_yaml(ROOT / 'catalog.yaml')[0]
-        require(catalog.get('apiVersion') == 'opsaid.net/addon-store/v1alpha1'
-                and catalog.get('kind') == 'AddonCatalog' and isinstance(catalog.get('items'), list), 'CATALOG_INVALID')
-        ids = set()
-        for item in catalog['items']:
-            require(item['id'] not in ids, 'CATALOG_DUPLICATE_ID')
-            ids.add(item['id'])
-            for field in ('path', 'docs'):
-                target = (ROOT / item[field]).resolve()
-                require(target.is_relative_to(ROOT) and target.exists(), 'CATALOG_PATH_INVALID')
-        paths = [ROOT / 'template/appname', *sorted((ROOT / 'addons').glob('*')),
-                 *sorted((ROOT / 'examples/overlays').glob('*'))]
+        ids = check_catalog(ROOT)
+        require(ids <= CONTRACTS.keys(), 'APP_CONTRACT_MISSING')
+        print('DOCS_OK', 'local_links=' + str(check_docs(ROOT)))
+        if args.app:
+            require(APP_ID.fullmatch(args.app), 'APP_ID_INVALID')
+            require((ROOT / 'addons' / args.app / 'kustomization.yaml').is_file(), 'APP_NOT_FOUND')
+            require(args.build_only or args.app in CONTRACTS, 'APP_CONTRACT_MISSING')
+            paths = [ROOT / 'addons' / args.app]
+            example = ROOT / 'examples/overlays' / args.app
+            if example.is_dir():
+                paths.append(example)
+        else:
+            paths = [ROOT / 'template/appname',
+                     *sorted(p for p in (ROOT / 'addons').iterdir() if p.is_dir()),
+                     *sorted(p for p in (ROOT / 'examples/overlays').iterdir() if p.is_dir())]
         failures = 0
         for path in paths:
-            if not (path / 'kustomization.yaml').exists():
-                continue
             try:
+                require((path / 'kustomization.yaml').is_file(), 'PACKAGE_ENTRY_MISSING')
+                if path.parent == ROOT / 'addons' or path == ROOT / 'template/appname':
+                    check_layout(path)
                 check_refs(path, allow_local=True)
                 _, objects = build(path)
                 check_objects(objects)
-                if path.name in ids or (args.app and path.name == args.app):
+                contract = not args.build_only and (path.name in ids or path.name in CONTRACTS)
+                if contract:
                     check_public(objects)
-                    check_openwebui(objects)
+                    check_contract(path.name, objects)
                     # Full source audit is a separate release gate, including read-only legacy docs.
                     sources = [path / 'kustomization.yaml', *path.glob('configuration/**/*.env')]
                     for source in sources:
                         require(not source_issues(source), 'PUBLIC_INPUT_INVALID/' + str(source.relative_to(ROOT)))
-                print('BUILD_OK', path.relative_to(ROOT), 'resources=' + str(len(objects)))
+                print('BUILD_OK', path.relative_to(ROOT), 'resources=' + str(len(objects)),
+                      'contract=' + ('PASSED' if contract else 'NOT_CHECKED'))
             except Invalid as error:
                 print('CHECK_FAIL', path.relative_to(ROOT), str(error))
                 failures += 1

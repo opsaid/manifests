@@ -7,15 +7,24 @@
 
 ## 当前状态
 
-- 仓库内实现完成；公开发布前置（全仓净化、历史改写、推送）已完成，
+- 首期 open-webui 试点本地工具已实现；公开发布前置（全仓净化、历史改写、推送）已完成，
   人工公开复核与仓库可见性切换待确认。
 - open-webui 为唯一试点：base、公开示例、校验器、[CHANGELOG](../CHANGELOG/README.md)
   与[应用文档](apps/open-webui/README.md)齐备；尚未集群验收，未上架（`catalog.yaml` 无条目，
   不通过文档存在推断发布状态）。
 - 私有环境配置仓库尚未建设；真实环境差异维护在独立私有仓库 overlay。
 - 文档分类已落实：应用接入位于 `docs/apps/<id>/`，公共规范位于 `docs/spec/`，
-  [文档导航](README.md)提供统一入口。后续模板、校验器及应用结构迁移见
-  [目录与命名改进计划](plan/2026-09-07-addon-store-structure-improvement.md)，尚未实施。
+  [文档导航](README.md)提供统一入口。
+- 三批本地改进已落实，范围和文件映射见
+  [目录与命名改进计划](plan/2026-09-07-addon-store-structure-improvement.md)：
+  模板补齐 selector 并收敛为 4 个默认对象；校验器增加目录、catalog、文档链接和工作负载
+  selector 检查，按应用注册合同；4 个 addon 已完成目录迁移。
+- 迁移前后对象内容等价：argo-cd 48、argo-events 17、argo-workflows 26、open-webui 9，
+  公开 open-webui overlay 9。Argo 应用仍未接入专属合同，不能将结构检查等同上架验收。
+- 本轮本地验证通过：34 项回归测试、65 个文档本地链接目标、全仓及逐应用检查，
+  工作区公开扫描 0 发现；该扫描不覆盖 Git 历史，也不代表远程 CI 已执行。
+  集群验收按维护者要求暂不纳入本轮，
+  [open-webui 验收步骤](apps/open-webui/acceptance.md)已准备，待真实环境就绪后执行。
 
 ## 发布前门槛
 

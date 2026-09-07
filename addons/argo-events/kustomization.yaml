@@ -6,7 +6,7 @@ namespace: argo-events
 configMapGenerator:
 - name: argo-events-controller-config
   files:
-  - controller-config.yaml=config/configmap/controller-config.yaml
+  - controller-config.yaml=configuration/configmaps/controller-config.yaml
   options:
     disableNameSuffixHash: true
 
@@ -15,11 +15,18 @@ replicas:
   count: 1
 
 resources:
-- cluster/crds.yaml
-- cluster/roles.yaml
-- cluster/namespace.yaml
-- cluster/events-webhook.yaml
-- service/events-webhook.yaml
+- clusters/crds/crds.yaml
+- security/serviceaccounts/argo-events-sa.yaml
+- security/clusterroles/argo-events-aggregate-to-admin.yaml
+- security/clusterroles/argo-events-aggregate-to-edit.yaml
+- security/clusterroles/argo-events-aggregate-to-view.yaml
+- security/clusterroles/argo-events-role.yaml
+- security/clusterrolebindings/argo-events-binding.yaml
+- clusters/namespaces/argo-events.yaml
+- security/serviceaccounts/argo-events-webhook-sa.yaml
+- security/clusterroles/argo-events-webhook.yaml
+- security/clusterrolebindings/argo-events-webhook-binding.yaml
+- network/services/events-webhook.yaml
 - workloads/deployments/controller-manager.yaml
 - workloads/deployments/events-webhook.yaml
 

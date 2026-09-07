@@ -11,7 +11,7 @@
 
 | 应用 | 接入与依赖 | 公开示例 |
 | --- | --- | --- |
-| Open WebUI | [接入说明](apps/open-webui/README.md)、[PostgreSQL 准备](apps/open-webui/postgres.md) | [完整 overlay](../examples/overlays/open-webui/README.md) |
+| Open WebUI | [接入说明](apps/open-webui/README.md)、[PostgreSQL 准备](apps/open-webui/postgres.md)、[运行验收](apps/open-webui/acceptance.md) | [完整 overlay](../examples/overlays/open-webui/README.md) |
 
 尚未提供商店接入文档的存量应用不在这里预建空目录；整体接入和发布状态见下方状态入口。
 

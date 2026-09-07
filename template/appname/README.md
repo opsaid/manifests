@@ -1,75 +1,66 @@
-# appname 目录模版
+# appname 应用模板
 
-分类划分参考 [headlamp](https://github.com/kubernetes-sigs/headlamp) dashboard 的资源导航分组。
+本模板提供新应用的最小公共 base。目录与命名以
+[Addon Store 公共规范](../../docs/spec/addon-store.md)为权威来源。
+模板镜像与配置是占位示例，可构建不代表可以启动或已经满足上架要求。
 
-## 目录划分
+## 默认与可选资源
 
 ```text
 appname/
-├── kustomization.yaml                     # 入口：namespace / labels / generator / resources / images
-├── clusters/                              # Cluster：集群级资源
-│   ├── crds/                              #   CustomResourceDefinition（按需）
-│   ├── namespaces/                        #   Namespace + LimitRange / ResourceQuota
-│   └── nodes/                             #   Node
-├── configuration/                         # Configuration：应用配置
-│   ├── configmaps/                        #   非敏感配置（配合 configMapGenerator）
-│   └── secrets/                           #   敏感配置（配合 secretGenerator）
-├── gateway/                               # Gateway：Gateway API（HTTPRoute 等，按需）
-├── network/                               # Network：网络资源
-│   ├── services/                          #   Service
-│   ├── ingresses/                         #   Ingress
-│   └── policies/                          #   NetworkPolicy
-├── security/                              # Security：命名空间级 RBAC
-│   ├── serviceaccounts/                   #   ServiceAccount
-│   ├── roles/                             #   Role / RoleBinding
-│   └── rolebindings/
-├── storage/                               # Storage：存储资源
-│   ├── persistent-volume-claims/          #   PersistentVolumeClaim
-│   ├── persistent-volumes/                #   PersistentVolume（按需）
-│   └── storage-classes/                   #   StorageClass（按需）
-└── workloads/                             # Workloads：工作负载
-    ├── cronjobs/                          #   CronJob（按需）
-    ├── daemonsets/                        #   DaemonSet（按需）
-    ├── deployments/                       #   Deployment
-    └── statefulsets/                      #   StatefulSet
+├── kustomization.yaml
+├── clusters/namespaces/
+│   ├── appname.yaml             # 默认 Namespace
+│   ├── limit-range.yaml         # 可选，不在默认入口引用
+│   └── memory-quota.yaml        # 可选，不在默认入口引用
+├── configuration/configmaps/
+│   └── app.yaml                 # 挂载到 /etc/appname/app.yaml 的配置输入
+├── network/
+│   ├── services/appname.yaml    # 默认 Service
+│   └── ingresses/appname.yaml   # 可选，不预设 Ingress class
+└── workloads/deployments/
+    └── appname.yaml             # 默认 Deployment
 ```
 
-对应 headlamp 分组：`Cluster`、`Configuration`、`Gateway`、`Network`、`Security`、`Storage`、`Workloads`。
-命名空间级 RBAC 与 ServiceAccount 放 `security/`；ClusterRole 等集群级 RBAC 与 CRD 属低频资源，
-需要时在 `clusters/` 下自建（参考 argo-cd addon 的 `clusters/crds/`、`security/roles/`）。
+默认渲染 4 个对象：Namespace、ConfigMap、Deployment、Service。Namespace、LimitRange、
+ResourceQuota 分文件交付，创建专用 namespace 不会同时施加配额。启用可选文件前需确定其
+ownership、参数和运行影响，并在入口 resources 中显式引用。
 
-## 使用规则
+## 制作步骤
 
-1. 复制骨架到 addon 目录：
+从 manifests 仓库根目录复制：
 
-   ```shell
-   cp -rp ../../../template/appname/* ./
-   ```
+```bash
+mkdir -p addons/my-app
+cp -R template/appname/. addons/my-app/
+```
 
-2. git 不追踪空目录：无示例内容的目录以 README.md 占位并说明用途 —— 复制骨架后
-   不使用的删除 README.md，使用的替换为实际清单并加入 kustomization `resources`。
+1. 将 YAML 内的 `appname` 替换为新应用 ID，并同步资源文件名及 resources 引用。对象、
+   generator、selector、Pod labels 和 Service selector 必须一致。存量应用不按此步骤改名。
+2. 将 Deployment 的示例镜像改为官方镜像名，在入口 `images` 中固定版本。示例 registry
+   不是真实镜像来源；实际私有 registry 差异由 overlay 的 `images.newName` 提供。
+3. 按实际应用校对监听端口、探针、配置文件格式/路径及启动方式。模板只演示 8080 端口和
+   TCP 探针、只读配置挂载，不预设程序参数、UID/GID 或调度策略；制作时应按镜像验证权限、
+   安全上下文、可写目录和健康检查，不能把未实测的默认值作为支持承诺。
+4. 配置文件优先通过 configMapGenerator / secretGenerator 生成。需要凭据时按规范增加
+   `configuration/secrets/` 占位输入，真实值在部署端受控临时副本中注入。当前 generator
+   保留稳定名称，配置更新后的滚动生效方式必须写入应用说明。
+5. 按需启用 Ingress、配额，或按规范增加 RBAC、存储等资源。真实环境域名、Ingress class、
+   TLS 和资源差异放私有 overlay，公开示例放 `examples/overlays/<id>/`。
+6. 编写制作说明与 `docs/apps/<id>/README.md`，提供可构建示例和应用合同检查，完成运行及
+   发布验收后才加入 catalog。新增或调整 addon 功能资源仍遵循 AGENTS.md 的授权边界。
 
-3. `resources` 中未引用的分类（security/、storage/、policies、statefulsets）启用时
-   自行加入 kustomization；已引用的占位文件填充真实内容后即生效，无需改动 kustomization。
+```bash
+kustomize build template/appname
+scripts/validate.sh
+scripts/validate.sh --app my-app --build-only
+```
 
-4. 配置注入优先使用 `configMapGenerator` / `secretGenerator`（`disableNameSuffixHash: true`
-   保持资源名稳定），Deployment 侧以 `envFrom` 或 volume 挂载引用。
+最后一个命令用于尚未注册应用合同的新包，不代表完成商店验收；合同接入后去掉 `--build-only`。
 
-5. 镜像版本统一在 kustomization `images` 中用 `newTag` 固定，清单内不写死 tag。
+## 维护边界
 
-## 最佳实践
-
-不同环境的差异变更仅收敛到两处，其余路径尽量不做自定义：
-
-| 路径 | 可变更内容 |
-| --- | --- |
-| `kustomization.yaml` | namespace、labels、generator、replicas、resources 引用、`images` 替换与版本固定、`patches`（Ingress host、ingressClassName 等字段替换） |
-| `configuration/` | `configmaps/`、`secrets/` 下的配置文件（如 `*.env`） |
-
-Ingress 默认 host 为占位值 `appname.example.com`（RFC 2606 保留域，不指向任何公司，且随应用名唯一）；
-复制模版后在 kustomization `patches` 中替换为实际域名（JSON6902），
-私有域名不得写入 `network/` 清单。
-
-其余目录（`clusters/`、`gateway/`、`network/`、`security/`、`storage/`、`workloads/`）
-存放按模版整理的功能清单，保持与模版一致，不做环境级自定义。确需调整时先说明原因与方案，
-征得维护者同意后再执行。
+公共默认值在 addon 中维护，真实环境差异在私有 overlay 中维护。日常应用变更仍集中于
+`kustomization.yaml` 与 `configuration/`；功能资源和应用 README 的调整按
+[AGENTS.md](../../AGENTS.md) 执行。模板不再用空目录及占位 README 展示完整 Kubernetes 分类，
+需要新 Kind 时在公共规范中明确归属及安装责任。

@@ -25,6 +25,44 @@
 `kustomization.yaml` 与 `configuration/`；功能资源不复制到租户仓库再各自维护。
 base 必须可独立渲染，不保证占位配置可以启动。存在依赖的应用必须附安装前提。
 
+### 2.1 目录、命名和资源归属
+
+应用 ID 为小写 kebab-case，目录保留 `addons/<id>/`，根 `kustomization.yaml` 为公共入口。
+展示名采用上游正式名称。功能清单按下表分类，目录按需创建，资源作用域和安装/卸载归属
+单独写入应用接入文档；目录分类不授予应用接管平台共享资源的权限。
+
+| 目录 | Kind 或用途 |
+| --- | --- |
+| `clusters/namespaces/` | Namespace、配套 LimitRange、ResourceQuota |
+| `clusters/crds/` | CustomResourceDefinition；CR 实例需另定归属 |
+| `clusters/priority-classes/` | PriorityClass |
+| `configuration/configmaps/` | ConfigMap 清单、非凭据 generator 输入 |
+| `configuration/secrets/` | Secret 清单、占位凭据 generator 输入 |
+| `network/services/`、`network/ingresses/`、`network/policies/` | Service、Ingress、NetworkPolicy |
+| `security/serviceaccounts/`、`security/roles/`、`security/rolebindings/` | ServiceAccount、Role、RoleBinding |
+| `security/clusterroles/`、`security/clusterrolebindings/` | ClusterRole、ClusterRoleBinding |
+| `storage/persistent-volume-claims/`、`persistent-volumes/`、`storage-classes/` | 对应 PVC、PV、StorageClass |
+| `workloads/deployments/`、`statefulsets/`、`daemonsets/`、`cronjobs/`、`jobs/` | 对应工作负载 |
+| `gateway/` | Gateway、HTTPRoute、GRPCRoute、ReferenceGrant、TCPRoute、TLSRoute、UDPRoute |
+
+`security/` 包含全部 RBAC；`clusters/` 不代表所有集群作用域资源的集合。新增 Kind 时先明确
+分类和 ownership，再更新 `scripts/checks/repository.py` 的固定映射。Node 不进入默认应用模板。
+
+单对象清单优先命名为 `<metadata.name>.yaml`，资源名、容器名和 generator 逻辑名保持稳定。
+不为目录或文件名统一而改动 Kubernetes 对象身份。上游文件名可以保留；大批生成的 CRD 可以
+保留同 Kind 多对象文件，但须在制作说明中解释。可选清单也应遵守目录映射，并明确是否被入口引用。
+
+公共包的本地资源和 generator 输入位于包内；输入文件放在对应 configuration 目录，
+由 generator 显式引用。原始应用配置按数据处理，不按 Kubernetes Kind 校验；同一文件不能
+同时作为 generator 输入与资源清单。远程资源引用须满足第 4 节的固定 ref 规则。
+必要的子目录聚合入口可以保留，不要求每个分类目录都增加 kustomization。
+
+模板默认仅创建 Namespace、ConfigMap、Deployment、Service；Ingress 和命名空间配额按需启用。
+通用模板只保证可渲染和已实现的静态检查，制作应用时必须替换示例镜像、校对配置协议、端口、
+探针、权限和可写路径。默认不替用户选择 Ingress Controller 或施加资源配额。
+
+### 2.2 商店索引
+
 应用版本发布验收通过后，在根 `catalog.yaml` 登记最小条目，示意结构如下：
 
 ```yaml
@@ -178,5 +216,26 @@ CI 必须固定构建工具版本，并校验源文件与解析后的渲染结�
 合同用例至少包含：env merge 覆盖和保留、files 按 key 替换（使用时）、镜像替换保留版本、
 namespace/连接字符串联动、patch 目标、关键资源身份与引用；同时验证错误配置确实失败。
 不同工具的兼容范围必须来自实际验证；本地可用的 kubectl 不自动成为 CI 标准。
+
+### 7.1 本地工具与覆盖范围
+
+- `scripts/validate.sh`：检查 catalog、仓库内 Markdown 链接、模板及全部 addon 的目录/引用和
+  构建结果、公开 overlay 构建；对已登记应用和已实现合同的试点执行专属检查。
+- `scripts/validate.sh --app <id>`：只构建指定应用及其公开示例，仍检查全仓 catalog 和文档链接；
+  缺少专属合同则失败。当前仅注册 open-webui 合同。
+- `scripts/validate.sh --app <id> --build-only`：检查指定应用的目录和构建，输出
+  `contract=NOT_CHECKED`，用于尚未接入商店的存量应用。catalog 中缺少合同的应用始终失败。
+- `scripts/validate.sh --audit-public`：独立扫描全仓公开内容，不等同于运行、历史或发布验收。
+- `python3 -m unittest discover -s scripts/tests -v`：校验器回归测试；CI 与本地使用相同命令。
+
+通用工作负载检查覆盖 Deployment、StatefulSet、DaemonSet 的非空 selector、matchLabels /
+matchExpressions 与 Pod labels 一致性，以及既有镜像固定检查；不宣称完整 Kubernetes API
+schema 校验。应用制作和发布仍需针对目标 Kubernetes 版本完成 API 与运行验收。
+文档检查覆盖仓库内行内链接和引用式链接定义的文件/目录目标，跳过代码块、外部 URL 和页内
+锚点；不声称已验证网络链接可达或 Markdown 锚点存在。
+
+目录检查覆盖可选清单和 generator 输入引用，不自动开启可选资源。现有应用目录迁移已经移除
+本轮旧目录例外，后续若确需例外，须明确文件、Kind、理由和移除条件，不能豁免公开信息检查。
+`--deploy` 和 `render-private.py` 仍只支持 open-webui 输入合同；新增检查模块不代表新增部署能力。
 
 实施进度与待办见 [Addon Store 状态](../addon-store-status.md)。

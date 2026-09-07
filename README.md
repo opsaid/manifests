@@ -15,9 +15,14 @@
 安装 `scripts/requirements.txt` 中的 Python 依赖及 `scripts/kustomize-version.txt` 指定的工具后，执行：
 
 ```bash
+scripts/validate.sh
 scripts/validate.sh --app open-webui
 python3 -m unittest discover -s scripts/tests -v
 ```
+
+全仓命令检查目录、引用、文档链接、构建及已注册应用合同；`--app` 只构建指定应用和示例。
+未注册合同的存量应用可使用 `--app <id> --build-only` 检查结构和构建，输出明确标为
+`contract=NOT_CHECKED`。运行及发布验收仍按应用文档执行。
 
 全仓公开检查另运行 `scripts/validate.sh --audit-public`：全仓净化与历史改写已完成，当前为
 0 发现。该检查不含 Git 历史与组织专属模式（`private-patterns.local` 不入库），构建通过不代表

@@ -7,6 +7,7 @@
 公共合同：[Addon Store 规范](../../spec/addon-store.md)。
 完整示例：[examples/overlays/open-webui](../../../examples/overlays/open-webui/kustomization.yaml)。
 依赖操作：[PostgreSQL 准备](./postgres.md)（建库、账号、pgvector 扩展、备份与验收）。
+运行与发布：[验收步骤](acceptance.md)（目标环境准备、验证顺序与证据要求）。
 
 ## 来源与实测范围
 

@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- clusterroles/argocd-application-controller.yaml
+- clusterrolebindings/argocd-application-controller.yaml
+- roles/argocd-application-controller.yaml
+- rolebindings/argocd-application-controller.yaml
+- serviceaccounts/argocd-application-controller.yaml
+- clusterroles/argocd-applicationset-controller.yaml
+- clusterrolebindings/argocd-applicationset-controller.yaml
+- roles/argocd-applicationset-controller.yaml
+- rolebindings/argocd-applicationset-controller.yaml
+- serviceaccounts/argocd-applicationset-controller.yaml
+- roles/argocd-notifications-controller.yaml
+- rolebindings/argocd-notifications-controller.yaml
+- serviceaccounts/argocd-notifications-controller.yaml
+- roles/argocd-redis.yaml
+- rolebindings/argocd-redis.yaml
+- serviceaccounts/argocd-redis.yaml
+- serviceaccounts/argocd-repo-server.yaml
+- clusterroles/argocd-server.yaml
+- clusterrolebindings/argocd-server.yaml
+- roles/argocd-server.yaml
+- rolebindings/argocd-server.yaml
+- serviceaccounts/argocd-server.yaml

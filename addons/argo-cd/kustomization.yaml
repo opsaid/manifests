@@ -10,8 +10,9 @@ replicas:
 resources:
 - clusters/namespaces/argocd.yaml
 - clusters/crds/
-- security/roles/
+- security/
 - configuration/configmaps/
+- configuration/secrets/argocd-secret.yaml
 - configuration/secrets/argocd-notifications.yaml
 - network/services/argocd-applicationset-controller.yaml
 - network/services/argocd-metrics.yaml

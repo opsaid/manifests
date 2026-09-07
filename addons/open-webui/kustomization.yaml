@@ -31,6 +31,7 @@ resources:
 - clusters/namespaces/open-webui.yaml
 - security/serviceaccounts/open-webui-sa.yaml
 - network/services/open-webui.yaml
+- network/services/redis.yaml
 - network/ingresses/open-webui.yaml
 - workloads/deployments/redis.yaml
 - workloads/deployments/open-webui.yaml

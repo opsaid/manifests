@@ -1,0 +1,17 @@
+# Optional: reference from kustomization.yaml and choose class/host in the overlay.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: appname
+spec:
+  rules:
+  - host: appname.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: appname
+            port:
+              name: http

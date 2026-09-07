@@ -1,113 +1,38 @@
-# argo-cd
+# argo-cd 制作说明
 
-## 来源
+资源整理来源：[Argo CD v3.1.7 manifests](https://github.com/argoproj/argo-cd/tree/v3.1.7/manifests)。
+当前镜像以本目录 `kustomization.yaml` 的 images 为准，模板骨架见
+[应用模板](../../template/appname/README.md)，目录归属见
+[公共规范](../../docs/spec/addon-store.md)。
 
-https://github.com/argoproj/argo-cd/tree/v3.1.7/manifests
+## 上游适配
 
-## 制作方式
+沿用既有清单行为：移除内置 Dex；argocd-server 使用 HTTP（`--insecure=true`），
+Service 未开放 443，TLS 接入由环境入口设计。此处记录包结构，不表示已经完成商店运行验收。
 
-### 获取源文件
+CRD 保留上游分文件及 `clusters/crds/kustomization.yaml` 聚合入口。
+RBAC 位于 `security/` 下按 Kind 分类，`security/kustomization.yaml` 聚合；ConfigMap 与
+Secret 分目录，原错置的 argocd-secret 已迁入 `configuration/secrets/`。
+部分网络/配置清单尚未由入口启用，不因文件存在推断功能已经启用。
 
-```shell
-mkdir build
+## 制作与升级
 
-git clone --branch v3.1.7 --depth 1 https://github.com/argoproj/argo-cd.git
+从固定的上游版本取得 manifests，对照根入口引用的对象更新公共包，再按实际 Kind 归类。
+保留资源名、容器名和配置语义，逐项说明与上游的差异。配置既有完整 ConfigMap/Secret 清单，
+不能把它们当作 files generator 的原始输入；后续 overlay 必须单独验证合并粒度。
+
+本轮只迁移目录和更新引用，渲染的 48 个对象内容与迁移前一致。全仓命令及以下命令可检查
+目录、selector、镜像固定和构建；`--build-only` 明确不执行专属应用合同。
+
+```bash
+scripts/validate.sh --app argo-cd --build-only
 ```
 
-### 生成目录
+## 商店接入尚缺
 
-```shell
-cp -rp ../../../template/appname/* ./
+尚未提供完整公开 overlay、应用输入合同和目标环境运行证据，未登记 catalog。
+接入前须盘点 files/完整清单的配置覆盖方式、CRD/ClusterRole 所有权、权限、Ingress/TLS、
+配置更新和升级回退行为，编写 `docs/apps/argo-cd/README.md` 并注册专属检查。
 
-rm -rf clusters/namespaces/appname.yaml
-rm -rf clusters/nodes/192.0.2.2.yaml
-rm -rf security/roles/demo.yaml security/rolebindings/demo.yaml security/serviceaccounts/demo.yaml
-
-rm -rf configuration/configmaps/app.yaml
-rm -rf configuration/secrets/app.yaml
-
-rm -rf workloads/deployments/demo-v1.yaml
-```
-
-### 制作部署
-
-```shell
-cp -rp argo-cd/manifests/crds/* clusters/crds
-
-cp argo-cd/manifests/base/application-controller/argocd-application-controller-statefulset.yaml workloads/statefulsets/argocd-application-controller.yaml
-cp argo-cd/manifests/base/application-controller/argocd-application-controller-network-policy.yaml network/policies/argocd-application-controller.yaml
-cp argo-cd/manifests/base/application-controller/argocd-metrics.yaml network/services
-cp -rp argo-cd/manifests/base/application-controller-roles/ security/roles/
-
-cp argo-cd/manifests/base/applicationset-controller/argocd-applicationset-controller-deployment.yaml workloads/deployments/argocd-applicationset-controller.yaml
-cp argo-cd/manifests/base/applicationset-controller/argocd-applicationset-controller-network-policy.yaml network/policies/argocd-applicationset-controller.yaml
-cp argo-cd/manifests/base/applicationset-controller/argocd-applicationset-controller-service.yaml network/services/argocd-applicationset-controller.yaml
-
-cp argo-cd/manifests/base/applicationset-controller/argocd-applicationset-controller-role.yaml security/roles/
-cp argo-cd/manifests/base/applicationset-controller/argocd-applicationset-controller-rolebinding.yaml security/roles/
-cp argo-cd/manifests/base/applicationset-controller/argocd-applicationset-controller-sa.yaml security/roles/
-cp -rp argo-cd/manifests/base/config/*.yaml configuration/configmaps/
-```
-
-```shell
-cp argo-cd/manifests/base/notification/argocd-notifications-cm.yaml configuration/configmaps
-cp argo-cd/manifests/base/notification/argocd-notifications-controller-deployment.yaml workloads/deployments/argocd-notifications-controller.yaml
-cp argo-cd/manifests/base/notification/argocd-notifications-controller-metrics-service.yaml network/services/argocd-notifications-controller.yaml
-cp argo-cd/manifests/base/notification/argocd-notifications-secret.yaml configuration/secrets/argocd-notifications.yaml
-cp argo-cd/manifests/base/notification/argocd-notifications-controller-role.yaml security/roles
-cp argo-cd/manifests/base/notification/argocd-notifications-controller-rolebinding.yaml security/roles
-cp argo-cd/manifests/base/notification/argocd-notifications-controller-sa.yaml security/roles
-```
-
-```shell
-cp argo-cd/manifests/base/repo-server/argocd-repo-server-deployment.yaml workloads/deployments/argocd-repo-server.yaml
-cp argo-cd/manifests/base/repo-server/argocd-repo-server-network-policy.yaml network/policies/argocd-repo-server.yaml
-cp argo-cd/manifests/base/repo-server/argocd-repo-server-sa.yaml security/roles
-cp argo-cd/manifests/base/repo-server/argocd-repo-server-service.yaml network/services/argocd-repo-server.yaml
-```
-
-```shell
-cp argo-cd/manifests/base/server/argocd-server-deployment.yaml workloads/deployments/argocd-server.yaml
-cp argo-cd/manifests/base/server/argocd-server-metrics.yaml network/services
-cp argo-cd/manifests/base/server/argocd-server-network-policy.yaml network/policies
-cp argo-cd/manifests/base/server/argocd-server-role.yaml security/roles
-cp argo-cd/manifests/base/server/argocd-server-rolebinding.yaml security/roles
-cp argo-cd/manifests/base/server/argocd-server-sa.yaml security/roles
-cp argo-cd/manifests/base/server/argocd-server-service.yaml network/services
-```
-
-```shell
-cp argo-cd/manifests/base/redis/argocd-redis-deployment.yaml workloads/deployments/argocd-redis.yaml
-cp argo-cd/manifests/base/redis/argocd-redis-network-policy.yaml network/policies
-cp argo-cd/manifests/base/redis/argocd-redis-role.yaml security/roles
-cp argo-cd/manifests/base/redis/argocd-redis-rolebinding.yaml security/roles
-cp argo-cd/manifests/base/redis/argocd-redis-sa.yaml security/roles
-cp argo-cd/manifests/base/redis/argocd-redis-service.yaml network/services
-```
-
-```shell
-cp argo-cd/manifests/cluster-rbac/application-controller/argocd-application-controller-clusterrole* security/roles
-cp argo-cd/manifests/cluster-rbac/applicationset-controller/argocd-applicationset-controller-clusterrole* security/roles
-cp argo-cd/manifests/cluster-rbac/server/argocd-server-clusterrole* security/roles
-```
-
-## 相关特性
-
-### 移除 dex 组件
-
-1. 移除内置 dex 服务，不支持 "dex.config" 配置；
-
-### 默认 http 访问
-
-workloads/deployments/argocd-server.yaml
-
-```text
-      - args:
-        - /usr/local/bin/argocd-server
-        - --insecure=true
-```
-
-network/services/argocd-server-service.yaml
-
-关闭 443 端口。
-
+功能资源调整遵循 [AGENTS.md](../../AGENTS.md)。现有源文件内镜像 tag 等上游遗留写法
+仍需在后续上架审查中对齐，目录合规不等于已满足全部商店合同。

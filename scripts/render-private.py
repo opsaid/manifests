@@ -43,7 +43,7 @@ def render(overlay, secrets_file, output):
         destination.chmod(0o600)
         rendered, objects = validate.build(private)
         validate.check_objects(objects)
-        validate.check_openwebui(objects, deploy=True)
+        validate.check_contract('open-webui', objects, deploy=True)
         descriptor = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         try:
             with os.fdopen(descriptor, 'w') as stream:

@@ -7,24 +7,29 @@ labels:
 - includeSelectors: false
   includeTemplates: true
   pairs:
-    opsaid.net/appname: demo-v1
+    opsaid.net/appname: appname
 
 configMapGenerator:
-- name: demo-v1
+- name: appname
   files:
   - app.yaml=configuration/configmaps/app.yaml
   options:
     disableNameSuffixHash: true
 
 replicas:
-- name: demo-v1
+- name: appname
   count: 1
 
 resources:
-- network/services/app.yaml
-- network/ingresses/app.yaml
-- workloads/deployments/demo-v1.yaml
+- clusters/namespaces/appname.yaml
+- network/services/appname.yaml
+- workloads/deployments/appname.yaml
+# Optional resources: enable deliberately and document ownership/inputs.
+# - network/ingresses/appname.yaml
+# - clusters/namespaces/limit-range.yaml
+# - clusters/namespaces/memory-quota.yaml
 
 images:
-- name: registry.example.com/appname/demo
+# Scaffold placeholder; replace with the official application image when creating an addon.
+- name: registry.example.com/appname
   newTag: 0.1.0

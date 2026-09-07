@@ -1,13 +1,13 @@
 # Kustomize 应用商店目录与命名改进实施计划
 
 日期：2026-09-07  
-状态：阶段一中的文档分类与规范正文迁移已实施；其余改进待实施。未执行 Git 提交或发布。
+状态：三个批次的本地改进已实施；集群验收按维护者要求暂不纳入本轮。本轮未执行部署或发布。
 
 ## 1. 目标与文档职责
 
 保留现有公共 base、私有 overlay、公开示例和应用发布机制，统一应用目录分类、命名、模板与校验规则，使后续应用能够按相同方式制作、审查和接入商店。
 
-本文记录本次结构改进的建议、实施顺序和验收条件；以下目标规则在完成相应规范修订前不替代现行约定。
+本文记录本次结构改进的实施顺序、验收条件与文件迁移映射；长期规则已经落实到公共规范，后续以规范正文为准。
 
 - [AGENTS.md](../../AGENTS.md) 是编辑权限的唯一依据。
 - [Addon Store 公共规范](../spec/addon-store.md) 是长期合同的权威来源。
@@ -34,7 +34,7 @@
 
 本次计划覆盖目录规范、模板、应用文档职责、校验器扩展及存量应用结构迁移。
 
-计划存在不代表已经批准其中的功能清单调整。根据 AGENTS.md，修改 `addons/<id>/` 的功能资源、应用 README，或新增资源文件前，应提交具体文件范围、理由及预期渲染差异，取得维护者明确同意后执行。维护者已明确批准对应阶段和范围时，执行时沿用该授权。本轮已获授权实施文档分类方案，包括同步应用 README 的迁移链接；其余功能清单调整按后续阶段处理。
+计划存在不代表已经批准其中的功能清单调整。根据 AGENTS.md，修改 `addons/<id>/` 的功能资源、应用 README，或新增资源文件前，应提交具体文件范围、理由及预期渲染差异，取得维护者明确同意后执行。维护者已明确批准对应阶段和范围时，执行时沿用该授权。本轮已获授权按三个批次实施模板、校验器、文档和应用目录迁移，包括对应功能资源路径与引用调整。维护者明确暂不考虑集群验收，运行环境及远程发布不在本轮实施范围。
 
 结构迁移以保持渲染对象语义不变为默认验收目标。镜像升级、运行配置调整、资源增删和依赖变化应另列变更，不能夹带在目录整理中。模板收敛可能改变模板自身的资源名或默认资源集合，须明确记录预期变化，不直接套用到存量应用。
 
@@ -70,43 +70,22 @@ manifests/
 `docs/plan/` 保存实施方案。商店整体状态继续使用现有单一文件，应用发布历史继续放在根
 `CHANGELOG/`。不预建空的应用文档目录或尚无实际内容的 guides、design 等分类。
 
-### 4.2 应用内部分类
+### 4.2 已采纳的应用目录规则
 
-保留现有功能分类框架，以固定的 Kind 到目录映射消除歧义。目录按需创建，不要求每个应用具备完整目录树。
+Kind 到目录映射、命名及文件粒度已进入 [公共规范 §2](../spec/addon-store.md)。
+其中补充了存量 argo-workflows 实际使用的 PriorityClass 归属；保留上游 CRD 同 Kind
+多对象文件，RBAC 按 Kind 拆分。本计划不再复制维护规范表格。
 
-| 目录 | 对象或内容 |
-| --- | --- |
-| `clusters/namespaces/` | Namespace 及与专用 namespace 配套的 LimitRange、ResourceQuota |
-| `clusters/crds/` | 应用包负责管理的 CustomResourceDefinition |
-| `configuration/configmaps/` | ConfigMap 清单或非凭据 generator 输入 |
-| `configuration/secrets/` | Secret 清单或含占位凭据的 generator 输入 |
-| `network/services/` | Service |
-| `network/ingresses/` | Ingress |
-| `network/policies/` | NetworkPolicy |
-| `gateway/` | 应用负责的 Gateway API 资源；按实际使用的 Kind 补规则 |
-| `security/serviceaccounts/` | ServiceAccount |
-| `security/roles/`、`security/rolebindings/` | Role、RoleBinding |
-| `security/clusterroles/`、`security/clusterrolebindings/` | ClusterRole、ClusterRoleBinding |
-| `storage/persistent-volume-claims/` | PersistentVolumeClaim |
-| `storage/persistent-volumes/` | 应用包明确负责的 PersistentVolume |
-| `storage/storage-classes/` | 应用包明确负责的 StorageClass |
-| `workloads/deployments/`、`statefulsets/`、`daemonsets/`、`cronjobs/` | 对应工作负载 Kind |
+## 5. 三个执行批次与原阶段对应
 
-`security/` 按权限功能收纳所有 RBAC，不再定义为仅命名空间级资源；`clusters/` 也不代表全部集群作用域资源的集合。作用域、安装责任、升级及卸载所有权在应用文档中单独说明。将资源放入上述目录不表示应用可以接管共享平台资源。
+| 批次 | 实施内容 | 对应原阶段 | 本轮结果 |
+| --- | --- | --- | --- |
+| 一：基础正确性 | 模板 selector、失败用例、open-webui 错误运行说明、状态措辞 | 阶段一、二、三的优先修复 | 本地完成 |
+| 二：可重复制作 | 正式目录规范、最小模板、合同分派、目录/catalog/链接检查及 CI | 阶段一、二、三 | 本地完成 |
+| 三：应用接入准备 | 4 个 addon 目录迁移、渲染等价比较、维护说明及 open-webui 验收步骤 | 阶段四、五 | 本地完成；集群验收暂缓 |
 
-新出现的 Kind 先补归属规则，不自动放入最相近目录。CR 实例不等同于 CRD，不统一塞入 `clusters/crds/`。
+以下保留各阶段的工作范围和验收标准，整体进度只在状态文档中汇总。
 
-### 4.3 命名与文件粒度
-
-- 应用 ID 使用稳定的小写 kebab-case；展示名采用上游正式名称，例如 `argo-cd` / `Argo CD`。
-- 资源目录使用上表固定词表，保留已有 `serviceaccounts`、`persistent-volume-claims` 等约定。
-- 单对象清单优先使用 `<metadata.name>.yaml`，不重复追加目录已表达的 Kind；现有上游文件名可在迁移中逐步对齐。
-- 优先一对象一文件；大批上游生成资源可保留经说明的多对象文件，不强制为形式一致拆分全部 CRD。
-- 资源名、容器名和 generator 逻辑名是应用接口。整理文件名和路径时保留这些名称，不为统一拼写改变 `argocd-server` 等既有接口。
-- generator 输入按逻辑组件命名，例如 `configuration/configmaps/open-webui.env`；任意应用配置文件的扩展名遵循应用实际需要。
-- 保留必要的子目录 `kustomization.yaml` 聚合入口；不要求每个分类目录都增加入口。
-
-## 5. 分阶段实施
 
 ### 阶段一：确定规范与文档职责
 
@@ -121,19 +100,19 @@ manifests/
 - 对齐 `template/appname/README.md` 的分类说明，修复 RBAC 归属描述冲突。
 - 明确应用制作 README 负责上游来源、制作过程和结构差异；`docs/apps/<id>/README.md` 负责当前安装与运行合同。接入文档仍保留规范要求的来源摘要和链接。
 - 明确示例 README 仅解释示例使用方式；发布历史由 CHANGELOG 负责。
-- 在获准修改应用 README 后，核对并修复 open-webui 的陈旧运行说明，链接到当前接入文档，避免维护两份输入表。
+- 核对并修复 open-webui 的陈旧运行说明，链接到当前接入文档；制作说明保留结构依据，当前输入表只有一个维护来源。
 
 涉及范围：公共规范、AGENTS.md、技能入口、catalog 文档路径、文档导航、模板 README、相关应用文档及经批准的应用 README。
 
 验收：目录映射无同一种 Kind 的冲突归属；示例、制作说明和接入文档链接有效；当前配置描述一致；未改变应用渲染结果。长期规范仍只有一个权威正文。
 
-本轮文档迁移评估与实施范围：
+前序文档迁移评估结论：
 
 - 校验器按 catalog 的 `docs` 字段解析仓库内路径，没有写死应用文档父目录；当前 catalog 为空，迁移只更新注释和规范示例，不创建上架条目。
 - 公开审查递归扫描工作区 Markdown，规范迁入 `docs/spec/` 后仍在扫描范围内。
 - `CLAUDE.md` 继续导入 AGENTS.md，Claude 技能符号链接继续指向共享技能，均不建立第二份规则。
 - 应用文档和规范移动后修正相对链接；应用说明补充仓库命令的执行目录。
-- 当前仅落实文档分类、文档职责与引用迁移；资源目录词表、模板收敛、陈旧运行说明修订及校验器拆分仍按本计划后续工作处理。
+- 前序文档迁移不改变应用资源；本轮已继续完成资源目录词表、模板收敛、陈旧运行说明修订和校验器拆分。
 - 迁移完成后的整体进度以 [Addon Store 状态](../addon-store-status.md) 为准；Git 历史中的旧路径和带提交链接的历史变更记录不作改写。
 
 ### 阶段二：收敛新应用模板
@@ -186,7 +165,7 @@ scripts/
 
 ### 阶段四：逐个应用迁移
 
-依赖：阶段一、三；每个应用迁移前确认具体只读路径变更已获批准。优先级：中。
+依赖：阶段一、三；本轮对应的应用目录迁移已获维护者授权。优先级：中。
 
 建议顺序与范围：
 
@@ -216,7 +195,7 @@ scripts/
 - 检查根 README、模板说明、应用文档、示例、CHANGELOG 索引中的路径与职责一致性。
 - 清理完成迁移后不再使用的结构例外和陈旧目录说明。
 - 以模板制作临时示例应用，验证文档指导、构建入口和通用结构检查形成完整流程；不将临时应用登记到 catalog。
-- 将有实际发布影响的变更记录到对应版本线的 `Unreleased`，不把结构完成标记为运行验收或正式发布。
+- open-webui 的目录迁移记录到现有版本线 `Unreleased`，提交关联记录于 CHANGELOG；未上架的 Argo 应用以本计划迁移表和制作说明记录，不虚构发布版本。
 
 ## 6. 验证方式
 
@@ -235,7 +214,7 @@ scripts/validate.sh --app open-webui
 python3 -m unittest discover -s scripts/tests -v
 ```
 
-其他应用的 `scripts/validate.sh --app <id>` 合同验收依赖阶段三分派机制及对应应用检查实现；当前不能用 open-webui 检查器替代旧应用验收。公开发布前仍执行现行 `scripts/validate.sh --audit-public` 及公共规范要求的其他门槛。
+合同分派已实现；当前仅注册 open-webui。其他应用用 `scripts/validate.sh --app <id> --build-only` 验证本地结构和构建，缺少合同的 `--app <id>` 会失败，不以 open-webui 检查器替代。公开发布前仍执行现行 `scripts/validate.sh --audit-public` 及公共规范要求的其他门槛。
 
 语义比较按 `apiVersion`、`kind`、`metadata.namespace`、`metadata.name` 识别对象；忽略 YAML 映射键顺序和无意义的文档排列，保留数组顺序语义。核对 selector、引用、RBAC、镜像、配置、探针和存储等对象内容，不以资源数量相同或 build 成功代替一致性证明。Secret 内容只在受控内存或临时文件中比较，不输出到普通日志或制品。
 
@@ -262,3 +241,46 @@ python3 -m unittest discover -s scripts/tests -v
 | 多集群目录和多层共享 overlay | 私有仓库实际环境结构与重复配置证明有必要 |
 
 参考：[Kubernetes Kustomize base 与 overlay 说明](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/#bases-and-overlays)。目录命名与分层细节属于本仓库维护约定。
+
+## 本轮应用文件迁移映射
+
+以下映射保持应用根构建入口及 Kubernetes 对象身份不变；相对路径基于对应 addon。
+
+| 应用 | 原路径 | 新路径 |
+| --- | --- | --- |
+| open-webui | `network/services/open-webui.yaml` | `network/services/open-webui.yaml`, `network/services/redis.yaml` |
+| argo-cd | `security/roles/argocd-application-controller-clusterrole.yaml` | `security/clusterroles/argocd-application-controller.yaml` |
+| argo-cd | `security/roles/argocd-application-controller-clusterrolebinding.yaml` | `security/clusterrolebindings/argocd-application-controller.yaml` |
+| argo-cd | `security/roles/argocd-application-controller-role.yaml` | `security/roles/argocd-application-controller.yaml` |
+| argo-cd | `security/roles/argocd-application-controller-rolebinding.yaml` | `security/rolebindings/argocd-application-controller.yaml` |
+| argo-cd | `security/roles/argocd-application-controller-sa.yaml` | `security/serviceaccounts/argocd-application-controller.yaml` |
+| argo-cd | `security/roles/argocd-applicationset-controller-clusterrole.yaml` | `security/clusterroles/argocd-applicationset-controller.yaml` |
+| argo-cd | `security/roles/argocd-applicationset-controller-clusterrolebinding.yaml` | `security/clusterrolebindings/argocd-applicationset-controller.yaml` |
+| argo-cd | `security/roles/argocd-applicationset-controller-role.yaml` | `security/roles/argocd-applicationset-controller.yaml` |
+| argo-cd | `security/roles/argocd-applicationset-controller-rolebinding.yaml` | `security/rolebindings/argocd-applicationset-controller.yaml` |
+| argo-cd | `security/roles/argocd-applicationset-controller-sa.yaml` | `security/serviceaccounts/argocd-applicationset-controller.yaml` |
+| argo-cd | `security/roles/argocd-notifications-controller-role.yaml` | `security/roles/argocd-notifications-controller.yaml` |
+| argo-cd | `security/roles/argocd-notifications-controller-rolebinding.yaml` | `security/rolebindings/argocd-notifications-controller.yaml` |
+| argo-cd | `security/roles/argocd-notifications-controller-sa.yaml` | `security/serviceaccounts/argocd-notifications-controller.yaml` |
+| argo-cd | `security/roles/argocd-redis-role.yaml` | `security/roles/argocd-redis.yaml` |
+| argo-cd | `security/roles/argocd-redis-rolebinding.yaml` | `security/rolebindings/argocd-redis.yaml` |
+| argo-cd | `security/roles/argocd-redis-sa.yaml` | `security/serviceaccounts/argocd-redis.yaml` |
+| argo-cd | `security/roles/argocd-repo-server-sa.yaml` | `security/serviceaccounts/argocd-repo-server.yaml` |
+| argo-cd | `security/roles/argocd-server-clusterrole.yaml` | `security/clusterroles/argocd-server.yaml` |
+| argo-cd | `security/roles/argocd-server-clusterrolebinding.yaml` | `security/clusterrolebindings/argocd-server.yaml` |
+| argo-cd | `security/roles/argocd-server-role.yaml` | `security/roles/argocd-server.yaml` |
+| argo-cd | `security/roles/argocd-server-rolebinding.yaml` | `security/rolebindings/argocd-server.yaml` |
+| argo-cd | `security/roles/argocd-server-sa.yaml` | `security/serviceaccounts/argocd-server.yaml` |
+| argo-cd | `configuration/configmaps/argocd-secret.yaml` | `configuration/secrets/argocd-secret.yaml` |
+| argo-events | `cluster/crds.yaml` | `clusters/crds/crds.yaml` |
+| argo-events | `cluster/roles.yaml` | `security/serviceaccounts/argo-events-sa.yaml`, `security/clusterroles/argo-events-aggregate-to-admin.yaml`, `security/clusterroles/argo-events-aggregate-to-edit.yaml`, `security/clusterroles/argo-events-aggregate-to-view.yaml`, `security/clusterroles/argo-events-role.yaml`, `security/clusterrolebindings/argo-events-binding.yaml` |
+| argo-events | `cluster/namespace.yaml` | `clusters/namespaces/argo-events.yaml` |
+| argo-events | `cluster/events-webhook.yaml` | `security/serviceaccounts/argo-events-webhook-sa.yaml`, `security/clusterroles/argo-events-webhook.yaml`, `security/clusterrolebindings/argo-events-webhook-binding.yaml` |
+| argo-events | `service/events-webhook.yaml` | `network/services/events-webhook.yaml` |
+| argo-events | `config/configmap/controller-config.yaml` | `configuration/configmaps/controller-config.yaml` |
+| argo-workflows | `cluster/crds.yaml` | `clusters/crds/crds.yaml` |
+| argo-workflows | `cluster/roles.yaml` | `security/serviceaccounts/argo.yaml`, `security/serviceaccounts/argo-server.yaml`, `security/roles/argo-role.yaml`, `security/clusterroles/argo-aggregate-to-admin.yaml`, `security/clusterroles/argo-aggregate-to-edit.yaml`, `security/clusterroles/argo-aggregate-to-view.yaml`, `security/clusterroles/argo-cluster-role.yaml`, `security/clusterroles/argo-server-cluster-role.yaml`, `security/rolebindings/argo-binding.yaml`, `security/clusterrolebindings/argo-binding.yaml`, `security/clusterrolebindings/argo-server-binding.yaml` |
+| argo-workflows | `cluster/namespace.yaml` | `clusters/namespaces/argo.yaml`, `clusters/priority-classes/workflow-controller.yaml` |
+| argo-workflows | `service/services.yaml` | `network/services/argo-server.yaml` |
+| argo-workflows | `service/ingresses.yaml` | `network/ingresses/workflows.yaml` |
+| argo-cd | `security/roles/kustomization.yaml` | `security/kustomization.yaml` |

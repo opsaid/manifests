@@ -5,8 +5,6 @@ namespace: argo
 
 configMapGenerator:
 - name: workflow-controller-configmap
-#  files:
-#  - controller-config.yaml=config/configmap/controller-config.yaml
   options:
     disableNameSuffixHash: true
 
@@ -15,15 +13,26 @@ configMapGenerator:
 #  count: 1
 
 resources:
-- cluster/crds.yaml
-- cluster/roles.yaml
-- cluster/namespace.yaml
-- service/services.yaml
-- service/ingresses.yaml
+- clusters/crds/crds.yaml
+- security/serviceaccounts/argo.yaml
+- security/serviceaccounts/argo-server.yaml
+- security/roles/argo-role.yaml
+- security/clusterroles/argo-aggregate-to-admin.yaml
+- security/clusterroles/argo-aggregate-to-edit.yaml
+- security/clusterroles/argo-aggregate-to-view.yaml
+- security/clusterroles/argo-cluster-role.yaml
+- security/clusterroles/argo-server-cluster-role.yaml
+- security/rolebindings/argo-binding.yaml
+- security/clusterrolebindings/argo-binding.yaml
+- security/clusterrolebindings/argo-server-binding.yaml
+- clusters/namespaces/argo.yaml
+- clusters/priority-classes/workflow-controller.yaml
+- network/services/argo-server.yaml
+- network/ingresses/workflows.yaml
 - workloads/deployments/argo-server.yaml
 - workloads/deployments/workflow-controller.yaml
 
-# Ingress 实际域名由私有 overlay 替换（service/ 清单为 workflows.example.com 占位）；
+# Ingress 实际域名由私有 overlay 替换（network/ingresses/ 清单为 workflows.example.com 占位）；
 # 镜像保持官方地址，私有 registry 替换由私有 overlay 的 images newName 完成
 images:
 - name: quay.io/argoproj/argocli

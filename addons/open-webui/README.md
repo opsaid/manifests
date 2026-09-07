@@ -4,7 +4,8 @@
 
 <https://github.com/open-webui/helm-charts/tree/open-webui-16.1.0/charts/open-webui>
 
-环境变量与功能开关对齐线上 docker compose 配置（外部 Postgres、GoChat OAuth、OTEL 等）；配置持久化策略、RAG embedding 模型等按本清单方案调整，差异见文末表格。
+本文记录上游来源和制作时的结构取舍。当前输入、依赖、数据边界及运行验收以
+[应用接入说明](../../docs/apps/open-webui/README.md)为准；历史 compose 对比不作为当前部署合同。
 
 ## 制作方式
 
@@ -16,7 +17,7 @@ git clone --branch open-webui-16.1.0 --depth 1 https://github.com/open-webui/hel
 
 ### 生成目录
 
-参考 chart 渲染结果，按 `../../../template/appname` 骨架整理：
+参考 chart 渲染结果，按仓库根目录的 `template/appname` 骨架整理：
 
 ```text
 addons/open-webui/
@@ -28,7 +29,9 @@ addons/open-webui/
 │   └── secrets/open-webui.env             # 敏感环境变量（API Key、S3 密钥）
 ├── network/
 │   ├── ingresses/open-webui.yaml          # Ingress
-│   └── services/open-webui.yaml           # open-webui / redis Service
+│   └── services/
+│       ├── open-webui.yaml                # 主服务
+│       └── redis.yaml                     # Redis Service
 ├── security/
 │   └── serviceaccounts/open-webui-sa.yaml # ServiceAccount
 └── workloads/
@@ -80,7 +83,8 @@ chart 的 `copy-app-data` initContainer 用于从镜像内播种默认数据；�
 
 `DATABASE_URL`（secrets env，含密码）指向外部 Postgres（地址由租户 secrets env 提供），
 `VECTOR_DB=pgvector` 复用同一实例（open-webui 的 pgvector 连接串默认回退 `DATABASE_URL`）。
-SQLite 不再使用；`/app/backend/data`（emptyDir）仅承载缓存与 S3 上传中转，Pod 重建无状态损失。
+SQLite 不再使用；`/app/backend/data` 使用 emptyDir，设计上承载缓存与 S3 上传中转。
+未外置的数据会随 Pod 删除，重建后的上传读取、会话及 Redis 行为仍须完成运行验收。
 配套 `ENABLE_PERSISTENT_CONFIG=False`：运行时配置只认 env，后台 UI 改动不持久化（不再产生 `config.json`）。
 
 ### pgvector 前置条件
@@ -139,9 +143,9 @@ base 清单不启用 TLS；需要时取消 kustomization `patches` 中预留的 
 | 端口 | `PORT=3000` | 镜像默认 8080 | Service/Ingress 已按 8080 适配 |
 | redis | 外部自建 redis（带密码） | 集群内 `redis` | 改接外部 redis 时将 `REDIS_URL` 移入 secrets |
 | nofile 65535 | ulimits | 未设置 | k8s 无直接等价（需特权 initContainer），暂不设置 |
-| CA 证书挂载 | `/etc/ssl/certs/ca-certificates.crt` | 未挂载 | `REQUESTS_VERIFY=False` 下非必需；需严格校验时以 ConfigMap 挂载 |
+| CA 证书挂载 | `/etc/ssl/certs/ca-certificates.crt` | 未增加私有 CA 挂载 | 当前 `REQUESTS_VERIFY=True`；私有 CA 接入需提供受信任证书并单独验证挂载方案 |
 | 资源 | 无限制 | limits 2C / 4Gi | `UVICORN_WORKERS=4` 对应提升 |
-| `ENABLE_PERSISTENT_CONFIG` | True | `False` | 运行时配置只认 env，UI 改动不持久化，配合 emptyDir 完全无状态 |
+| `ENABLE_PERSISTENT_CONFIG` | True | `False` | 配置以 env 为主；该开关不证明应用数据无持久化需求，数据边界见接入说明 |
 | `RAG_EMBEDDING_MODEL` | 未设置 | `text-embedding-3-small` | openai 引擎必须显式指定，默认值为本地模型名会报错 |
 | `ENABLE_OAUTH_PERSISTENT_CONFIG` | False | 已移除 | `ENABLE_PERSISTENT_CONFIG=False` 下该开关冗余 |
 | copy-app-data initContainer | chart 默认包含 | 已移除 | 镜像内 `/app/backend/data` 为空，播种无实际作用 |
