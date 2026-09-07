@@ -58,7 +58,7 @@
 ├── docs/apps/<app>.md               # 应用依赖、输入、运行和升级说明
 ├── docs/*-plan.md                   # 阶段计划，不作为规范入口
 ├── scripts/                        # 构建与校验程序
-└── changelogs/<app>.md              # 按应用记录模板发布
+└── changelogs/<app>/CHANGELOG-v<major>.md   # 按应用版本线记录模板发布
 
 独立私有仓库 environment-config/
 └── environments/<environment>/<app>/
