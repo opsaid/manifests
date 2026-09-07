@@ -1,4 +1,4 @@
-<!-- 本文件遵循 changelogs/README.md 索引与公共规范 §6 的结构约定，覆盖 open-webui v0 版本线；
+<!-- 本文件遵循 CHANGELOG/README.md 索引与公共规范 §6 的结构约定，覆盖 open-webui v0 版本线；
 新版本段落置于文件顶部，发布时将 Unreleased 改为版本头并补齐发布元信息。 -->
 
 # Unreleased

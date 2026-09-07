@@ -41,7 +41,7 @@ items:
 
 这是仓库元数据，不能提交给 Kubernetes API，也不引入 CRD。
 `id` 必须唯一，`path` 与 `docs` 必须存在且位于仓库内；未完成验收的目录不列入索引。
-应用 ID 一旦发布应保持稳定；版本来自 `<id>-v*` 发布 tag 和 `changelogs/<id>/CHANGELOG-v<major>.md`，镜像版本来自对应 ref
+应用 ID 一旦发布应保持稳定；版本来自 `<id>-v*` 发布 tag 和 `CHANGELOG/<id>/CHANGELOG-v<major>.md`，镜像版本来自对应 ref
 中的 kustomization。不重复维护 `latestVersion`、镜像版本或安装参数的多份数据。
 `v1alpha1` 仅标识索引格式；将来已有消费者后，破坏格式时才另立版本。
 
@@ -135,12 +135,12 @@ secretGenerator（`type: kubernetes.io/tls`）交付；此时同名 Secret 不�
 - 1.x 起，不兼容修改 generator/资源名、受支持 patch 目标、配置语义或运行前提须升 major；
   兼容的新能力升 minor，兼容修复升 patch。镜像升级按实际影响分类，不能统一当成 minor。
 - 0.x 阶段仍必须标注破坏性变更、升 minor 并提供迁移说明，不利用“未到 1.0”省略兼容性评估。
-- `changelogs/<id>/CHANGELOG-v<major>.md` 按版本线记录发布（结构参考 Kubernetes CHANGELOG 目录规范）：
+- `CHANGELOG/<id>/CHANGELOG-v<major>.md` 按版本线记录发布（结构参考 Kubernetes CHANGELOG 目录规范）：
   新版本段落在前；每段含发布元信息（模板版本、应用/镜像版本、已验证环境）、`Changelog since 上一版本`、
   `Changes by Kind` 分类条目（API Change 为接口与必填输入变化，Feature、Bug or Regression、
   Deprecation，Dependencies 为应用与镜像版本，Other (Cleanup or Flake)），条目附对应提交链接，
   空分类省略。未发布条目暂存于当前版本线的 `Unreleased` 段，发布时改为版本头并补齐元信息；
-  数据迁移与发布前提写入版本段落的 Notes。索引见 `changelogs/README.md`。
+  数据迁移与发布前提写入版本段落的 Notes。索引见 `CHANGELOG/README.md`。
 - 发布前通过本地/CI 合同与运行检查，发布后用实际远程 ref 从干净目录复验；未完成远程复验不宣布可用。
 - 升级在私有仓库修改 ref，执行输入校验、脱敏渲染 diff、必要备份与运行检查，再部署。
   回退 ref 只回退期望清单，不能撤销数据库迁移；必须先确认数据向后兼容或有可执行恢复方案。

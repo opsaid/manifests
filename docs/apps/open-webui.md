@@ -135,7 +135,7 @@ Python 3.9+，`python3 -m pip install -r scripts/requirements.txt`。
 需测试上传后重建再读取、会话行为和 Redis 重建影响；新增 PVC 或变更功能资源须按仓库规则处理。
 
 旧入口切换前，比较资源身份、镜像内容、env 键、权限/UID、探针、存储与 namespace。
-本次明确变化见 [changelogs/open-webui/CHANGELOG-v0.md](../../changelogs/open-webui/CHANGELOG-v0.md)：尤其是官方镜像、证书校验、OIDC 默认行为和新签名密钥。
+本次明确变化见 [CHANGELOG/open-webui/CHANGELOG-v0.md](../../CHANGELOG/open-webui/CHANGELOG-v0.md)：尤其是官方镜像、证书校验、OIDC 默认行为和新签名密钥。
 仅修改 Git ref 不能恢复数据库版本，备份和迁移兼容性须先验证。
 
 上架前完成：目标架构镜像拉取、非 root 启动/写目录、探针、数据库/pgvector、上传与读取、模型调用，

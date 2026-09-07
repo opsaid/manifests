@@ -24,7 +24,7 @@
 
 改动前后资源身份相同（9 个），以下只记录变化字段，不记录原环境值或 Secret 内容。
 身份 UUID 的 labels/annotations 移除；域名恢复占位；Ingress class 从 base 移除；镜像改为官方地址。
-配置改动包括证书校验、OAuth 默认关闭、端点中性化及增加稳定会话签名密钥，详情见 changelogs/open-webui/CHANGELOG-v0.md。
+配置改动包括证书校验、OAuth 默认关闭、端点中性化及增加稳定会话签名密钥，详情见 CHANGELOG/open-webui/CHANGELOG-v0.md。
 其余资源、探针、权限和存储字段未发生变更，但官方镜像的运行兼容性仍需独立验证。
 
 ```text
@@ -134,10 +134,10 @@ Ingress/open-webui/spec/rules/0/host
   校验器同步：`kubernetes.io/tls` Secret 的证书材料不做占位符/凭据签名检查（仍要求非空、
   禁私网值），open-webui 资源合同接受可选第 10 个资源 `open-webui-tls`（类型与键名必须正确，
   负向用例验证）；合同测试增至 22 项。AGENTS.md、规范 §1/§5、接入说明与示例 README 同步。
-- 参照 Kubernetes CHANGELOG 目录规范建设 `changelogs/`：每应用一个子目录，每条版本线一个
+- 参照 Kubernetes CHANGELOG 目录规范建设 `CHANGELOG/`（目录大小写一并对齐）：每应用一个子目录，每条版本线一个
   `CHANGELOG-v<major>.md`（新版本在前，`git mv` 保留历史），条目按 Changes by Kind 分类
   （API Change/Feature/Bug or Regression/Deprecation/Dependencies/Other）并附提交引用；
-  `Unreleased` 段承载未发布条目。规范 §6 更新为该结构的权威描述，`changelogs/README.md`
+  `Unreleased` 段承载未发布条目。规范 §6 更新为该结构的权威描述，`CHANGELOG/README.md`
   作纯索引并指向规范。
 - argo-cd kustomization 移除无引用的 dex 与 ECR redis 镜像条目，前后渲染哈希一致。
 - 移除被追踪的 .DS_Store 并补 .gitignore；CI 新增 `--audit-public` 步骤（不含组织专属模式
