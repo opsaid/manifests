@@ -45,7 +45,6 @@ patches:
   patch: |-
     - op: remove
       path: /spec/ingressClassName
-
 images:
 - name: ghcr.io/open-webui/open-webui
   newTag: v0.11.3
