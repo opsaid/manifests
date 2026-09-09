@@ -60,6 +60,7 @@ patches:
         secretName: open-webui-tls
 # 资源 patch 按容器名合并，不依赖 containers 数组顺序；requests/limits 内逐键合并：
 # 主容器写全 requests/limits 全量生效；redis 只写 requests，limits 继承 base 值。
+# 示例同时为内置 Redis 设置官方生产建议的连接空闲超时和最大客户端数。
 - target:
     group: apps
     version: v1
@@ -97,6 +98,12 @@ patches:
         spec:
           containers:
           - name: redis
+            args:
+            - redis-server
+            - --timeout
+            - "1800"
+            - --maxclients
+            - "10000"
             resources:
               requests:
                 cpu: 100m
